@@ -21,7 +21,7 @@ Browse to http://localhost:8000
 
 # Notes
 
-This project is a mess. It's a project I've been working on for fun and education. I'm sharing the code because it might help others who are trying to figure out similar things.
+This project is a mess, I've been working on for fun and education. I'm sharing the code because it might help others who are trying to figure out similar things.
 
 ## Definitely bad stuff
 
