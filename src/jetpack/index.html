@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>tinygl</title>
+    <style>
+    canvas {
+        width: 800px;
+        height: 800px;
+        image-rendering: crisp-edges;
+        border-style: solid;
+    }
+
+    </style>
+</head>
+
+<script src="coi-serviceworker.js"></script>
+
+<script type="module" defer="true">
+    import { WasmPcm } from "./wasmpcm.js";
+
+    window.addEventListener('load', async () => {
+        await WasmPcm.init('lib/jetpack.wasm');
+        const buttonEl = document.getElementById('button-start');
+        buttonEl.innerHTML = "Start";
+        buttonEl.disabled = false;
+        buttonEl.addEventListener('click', async () => {
+            await WasmPcm.start();
+
+            buttonEl.style.visibility = 'hidden';
+            let canvasEl = document.getElementById('canvas');
+            canvasEl.style.display = 'block';
+        }, false);
+    });
+
+</script>
+
+<body>
+    <p>
+        <button id="button-start" disabled>Loading</button>
+        <canvas id="canvas" width=800 height=800 style="display:none">
+    </p>
+    <p>
+        Zero-jetpack. Use cursors keys to fly. +/- to zoom view.
+    </p>
+    <p>
+        Assets and code (anything not listed is of unknown origin)<br>
+        <a href="https://cofonts.com/fira-sans-free-download/">FiraSans-Regular.ttf</a>&nbsp;
+        <a href="https://github.com/adobe-fonts/source-code-pro/blob/release/LICENSE.md">SourceCodePro-Regular.ttf</a>&nbsp;
+        <a href="https://markuskaarlonen.com/space-debris">space-debris.mod</a>&nbsp;
+        <a href="https://github.com/ZDoom/gzdoom/blob/master/soundfont/gzdoom.sf2">gzdoom.sf2</a>&nbsp;
+        <a href="https://free-game-assets.itch.io/free-39-portraits-pixel-art-game-assets">Frog portrait</a>&nbsp;
+        <a href="https://commons.wikimedia.org/wiki/File:Zero_the_Ziguana.svg">Zero<a/>
+        <a href="https://cheekyinkling.itch.io/shikashis-fantasy-icons-pack">Egg
+        <a href="https://github.com/sinshu/ziggysynth/">ziggysynth</a>&nbsp;
+        <a href="https://github.com/rombankzero/pocketmod">pocketmod</a>&nbsp;
+        <a href="https://github.com/tsoding/olive.c/">olive.c</a>&nbsp;
+        <a href="https://github.com/MetricPanda/fast-poly2tri">MPE_fastpoly2tri.c</a>&nbsp;
+        <a href="https://github.com/nothings/stb/blob/master/stb_truetype.h">stb_truetype</a>&nbsp;
+        <a href="https://github.com/ziglibs/zlm">zlm</a>&nbsp;
+        <a href="https://github.com/zigimg/zigimg">zigimg</a>&nbsp;
+        <a href="https://github.com/raysan5/raylib/tree/master/src">Raylib (collision functions)</a>&nbsp;
+    </p>
+
+<hr><a href="https://github.com/ringtailsoftware/zig-wasm-audio-framebuffer/">https://github.com/ringtailsoftware/zig-wasm-audio-framebuffer/</a>
+</body>
+
+</html>
