@@ -26,6 +26,4 @@ pub const Game = struct {
     pub const Vec2 = math.Vec2;
     pub const millis = @import("time.zig").millis;
     pub const initTime = @import("time.zig").initTime;
-
-
 };

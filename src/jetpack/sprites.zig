@@ -17,10 +17,10 @@ pub const AnimationAction = enum {
     WalkLeft,
     WalkRight,
     WalkUp,
-//    MineRight,
-//    MineLeft,
-//    MineUp,
-//    MineDown,
+    //    MineRight,
+    //    MineLeft,
+    //    MineUp,
+    //    MineDown,
     Death,
     Spin,
     Move,
@@ -38,19 +38,19 @@ const JsonSpriteAnimation = struct {
     walkleft: ?[]AnimationFrame = null,
     walkright: ?[]AnimationFrame = null,
     walkup: ?[]AnimationFrame = null,
-//    mineright: ?[]AnimationFrame = null,
-//    mineleft: ?[]AnimationFrame = null,
-//    mineup: ?[]AnimationFrame = null,
-//    minedown: ?[]AnimationFrame = null,
+    //    mineright: ?[]AnimationFrame = null,
+    //    mineleft: ?[]AnimationFrame = null,
+    //    mineup: ?[]AnimationFrame = null,
+    //    minedown: ?[]AnimationFrame = null,
     death: ?[]AnimationFrame = null,
     spin: ?[]AnimationFrame = null,
     move: ?[]AnimationFrame = null,
     hurt: ?[]AnimationFrame = null,
     attack: ?[]AnimationFrame = null,
-    flyleft : ?[]AnimationFrame = null,
-    flyright : ?[]AnimationFrame = null,
-    thrustleft : ?[]AnimationFrame = null,
-    thrustright : ?[]AnimationFrame = null,
+    flyleft: ?[]AnimationFrame = null,
+    flyright: ?[]AnimationFrame = null,
+    thrustleft: ?[]AnimationFrame = null,
+    thrustright: ?[]AnimationFrame = null,
 };
 
 const JsonSprite = struct {
@@ -71,7 +71,7 @@ pub const Sprite = struct {
     sheetSurf: *Game.Surface,
     name: []u8,
 
-    pub fn create(allocator:Allocator, size: SpriteSheetCoord, textures: []SpriteSheetCoord, animations: []JsonSpriteAnimation, animActions: std.enums.EnumMap(AnimationAction, []AnimationFrame), sheetSurf:*Game.Surface, name:[]const u8) !*Self {
+    pub fn create(allocator: Allocator, size: SpriteSheetCoord, textures: []SpriteSheetCoord, animations: []JsonSpriteAnimation, animActions: std.enums.EnumMap(AnimationAction, []AnimationFrame), sheetSurf: *Game.Surface, name: []const u8) !*Self {
         var s = allocator.create(Self) catch |err| {
             return err;
         };
@@ -92,7 +92,7 @@ pub const Sprite = struct {
         return self.animActions.get(action);
     }
 
-    pub fn render(self:*const Self, renderer:*Game.Renderer, pos:Vec2, dim:Vec2, frameIndex:u32) void {
+    pub fn render(self: *const Self, renderer: *Game.Renderer, pos: Vec2, dim: Vec2, frameIndex: u32) void {
         const sheetSurf = self.sheetSurf;
         const srcx = self.textures[frameIndex][0];
         const srcy = self.textures[frameIndex][1];
@@ -107,7 +107,7 @@ pub const Sprite = struct {
         renderer.sprite_blend(&spriteSurf, dstx, dsty, @floatToInt(i32, dim.x), @floatToInt(i32, dim.y));
     }
 
-    pub fn renderRotated(self:*const Self, renderer:*Game.Renderer, pos:Vec2, dim:Vec2, frameIndex:u32, angleRad:f32) void {
+    pub fn renderRotated(self: *const Self, renderer: *Game.Renderer, pos: Vec2, dim: Vec2, frameIndex: u32, angleRad: f32) void {
         const sheetSurf = self.sheetSurf;
         const srcx = self.textures[frameIndex][0];
         const srcy = self.textures[frameIndex][1];
@@ -121,7 +121,6 @@ pub const Sprite = struct {
 
         renderer.sprite_blend_rotated(&spriteSurf, dstx, dsty, @floatToInt(i32, dim.x), @floatToInt(i32, dim.y), angleRad);
     }
-
 };
 
 const JsonSpritesTop = struct { items: []JsonSprite };
@@ -152,10 +151,10 @@ pub const Sprites = struct {
                     if (anim.walkleft != null) animActions.put(AnimationAction.WalkLeft, anim.walkleft.?);
                     if (anim.walkright != null) animActions.put(AnimationAction.WalkRight, anim.walkright.?);
                     if (anim.walkup != null) animActions.put(AnimationAction.WalkUp, anim.walkup.?);
-//                    if (anim.mineleft != null) animActions.put(AnimationAction.MineLeft, anim.mineleft.?);
-//                    if (anim.mineright != null) animActions.put(AnimationAction.MineRight, anim.mineright.?);
-//                    if (anim.minedown != null) animActions.put(AnimationAction.MineDown, anim.minedown.?);
-//                    if (anim.mineup != null) animActions.put(AnimationAction.MineUp, anim.mineup.?);
+                    //                    if (anim.mineleft != null) animActions.put(AnimationAction.MineLeft, anim.mineleft.?);
+                    //                    if (anim.mineright != null) animActions.put(AnimationAction.MineRight, anim.mineright.?);
+                    //                    if (anim.minedown != null) animActions.put(AnimationAction.MineDown, anim.minedown.?);
+                    //                    if (anim.mineup != null) animActions.put(AnimationAction.MineUp, anim.mineup.?);
                     if (anim.death != null) animActions.put(AnimationAction.Death, anim.death.?);
                     if (anim.spin != null) animActions.put(AnimationAction.Spin, anim.spin.?);
                     if (anim.move != null) animActions.put(AnimationAction.Move, anim.move.?);
@@ -167,16 +166,15 @@ pub const Sprites = struct {
                     if (anim.thrustright != null) animActions.put(AnimationAction.ThrustRight, anim.thrustright.?);
                 }
 
-
                 if (!textureMap.contains(jsprite.*.filename)) {
                     //std.log.err("load tex {s}", .{jsprite.*.filename});
                     const data = Game.Assets.ASSET_MAP.get(jsprite.*.filename).?;
-                    const im:zigimg.Image = zigimg.Image.fromMemory(std.heap.page_allocator, data) catch |err| {
+                    const im: zigimg.Image = zigimg.Image.fromMemory(std.heap.page_allocator, data) catch |err| {
                         return err;
                     };
                     // im is allocated, sheetSurf is copied and just has a pointer to allocated buf
-                    var sl = std.mem.bytesAsSlice(u32, @alignCast(4,im.pixels.asBytes()));
-                    var sheetSurf:*Game.Surface = Game.Surface.create(allocator, sl.ptr, 0, 0, im.width, im.height, im.width) catch |err| {
+                    var sl = std.mem.bytesAsSlice(u32, @alignCast(4, im.pixels.asBytes()));
+                    var sheetSurf: *Game.Surface = Game.Surface.create(allocator, sl.ptr, 0, 0, im.width, im.height, im.width) catch |err| {
                         return err;
                     };
                     try textureMap.put(jsprite.*.filename, sheetSurf);
@@ -187,7 +185,7 @@ pub const Sprites = struct {
                 // save sprite in map
 
                 // needs to be allocated!
-                var sprite:*Sprite = Sprite.create(std.heap.page_allocator, jsprite.*.size, jsprite.*.textures, jsprite.*.animations, animActions, sheetSurf, jsprite.*.name) catch |err| {
+                var sprite: *Sprite = Sprite.create(std.heap.page_allocator, jsprite.*.size, jsprite.*.textures, jsprite.*.animations, animActions, sheetSurf, jsprite.*.name) catch |err| {
                     return err;
                 };
                 try spriteMap.put(jsprite.name, sprite);

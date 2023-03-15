@@ -3,7 +3,7 @@ const std = @import("std");
 var target: std.zig.CrossTarget = undefined;
 
 // https://github.com/ringtailsoftware/zig-embeddir
-pub fn addAssetsOption(b: *std.build.Builder, exe:anytype, comptime name: []const u8) !void {
+pub fn addAssetsOption(b: *std.build.Builder, exe: anytype, comptime name: []const u8) !void {
     var options = b.addOptions();
 
     var files = std.ArrayList([]const u8).init(b.allocator);
@@ -31,12 +31,7 @@ pub fn addAssetsOption(b: *std.build.Builder, exe:anytype, comptime name: []cons
 }
 
 fn addApp(b: *std.build.Builder, comptime name: []const u8, flags: ?[]const []const u8, sources: ?[]const []const u8, includes: ?[]const []const u8) !void {
-    const lib = b.addSharedLibrary(.{
-        .name = name,
-        .root_source_file = .{ .path = "src/" ++ name ++ "/" ++ name ++ ".zig" },
-        .target = target,
-        .optimize = .ReleaseFast
-    });
+    const lib = b.addSharedLibrary(.{ .name = name, .root_source_file = .{ .path = "src/" ++ name ++ "/" ++ name ++ ".zig" }, .target = target, .optimize = .ReleaseFast });
 
     lib.rdynamic = true;
     lib.strip = false;
@@ -80,6 +75,5 @@ pub fn build(b: *std.build.Builder) !void {
     b.installFile("src/coi-serviceworker.js", "coi-serviceworker.js");
     b.installFile("src/unmute.js", "unmute.js");
 
-    try addApp(b, "jetpack", &.{"-Wall"}, &.{"src/jetpack/olive.c/olive.c", "src/jetpack/MPE_fastpoly2tri.c", "src/jetpack/stb_truetype.c", "src/jetpack/pocketmod.c"}, null);
-
+    try addApp(b, "jetpack", &.{"-Wall"}, &.{ "src/jetpack/olive.c/olive.c", "src/jetpack/MPE_fastpoly2tri.c", "src/jetpack/stb_truetype.c", "src/jetpack/pocketmod.c" }, null);
 }

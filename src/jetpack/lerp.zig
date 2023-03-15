@@ -11,7 +11,7 @@ pub const LerpStyle = enum {
     EaseInBack,
 };
 
-pub fn lerp(v0:f32, v1:f32, t_in:f32, lerpStyle: LerpStyle) f32 {
+pub fn lerp(v0: f32, v1: f32, t_in: f32, lerpStyle: LerpStyle) f32 {
     if (v0 == v1) {
         return v0;
     }
@@ -25,7 +25,7 @@ pub fn lerp(v0:f32, v1:f32, t_in:f32, lerpStyle: LerpStyle) f32 {
 
     var t_out = t_in;
 
-    switch(lerpStyle) {
+    switch (lerpStyle) {
         .Linear => {},
         .EaseIn => t_out = @sin(t_out * std.math.pi * 0.5),
         .Smoothstep => t_out = t_out * t_out * (3.0 - 2.0 * t_out),

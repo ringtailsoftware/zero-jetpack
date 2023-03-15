@@ -11,10 +11,7 @@ var rand = prng.random();
 
 const FLOATER_SIZE = 32;
 
-const FloaterState = enum {
-    Init,
-    Running
-};
+const FloaterState = enum { Init, Running };
 
 pub const Floater = struct {
     const Self = @This();
@@ -23,7 +20,7 @@ pub const Floater = struct {
     sprite: *Game.Sprite,
     state: FloaterState,
 
-    pub fn init(sprite:*Game.Sprite, pos:Vec2) Self {
+    pub fn init(sprite: *Game.Sprite, pos: Vec2) Self {
         // zig fmt: off
         var s = Self{
             .body = Game.Body.init(pos, FLOATER_SIZE, 1),
@@ -37,11 +34,11 @@ pub const Floater = struct {
         return s;
     }
 
-    pub fn update(self: *Self, entities:*Game.Entities, id:Game.EntityId, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, player: *Game.Player, basket: *Game.Basket) !void {
-        switch(self.state) {
+    pub fn update(self: *Self, entities: *Game.Entities, id: Game.EntityId, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, player: *Game.Player, basket: *Game.Basket) !void {
+        switch (self.state) {
             .Init => {
                 // push away in some random direction, always up
-                self.body.applyImpulse(vec2(rand.float(f32)*2 - 1 , -1).normalize().scale(world.gravity * 4));
+                self.body.applyImpulse(vec2(rand.float(f32) * 2 - 1, -1).normalize().scale(world.gravity * 4));
                 self.state = .Running;
             },
             .Running => {
@@ -49,7 +46,7 @@ pub const Floater = struct {
                     const toPlayer = player.body.pos.sub(self.body.pos);
                     const dirToPlayer = toPlayer.normalize();
                     const distToPlayer = toPlayer.length();
-                    if (distToPlayer < player.body.radius*4) {
+                    if (distToPlayer < player.body.radius * 4) {
                         self.body.applyImpulse(dirToPlayer.scale(world.gravity * 8)); // magnet direction chasing
                     }
 

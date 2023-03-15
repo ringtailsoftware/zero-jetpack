@@ -13,10 +13,10 @@ pub const Player = struct {
     animController: Game.AnimationController,
     sprite: *Game.Sprite,
     lastBobPos: Vec2,
-    bobPos: Vec2,   // relative to body.pos
+    bobPos: Vec2, // relative to body.pos
     angle: f32,
 
-    pub fn init(sprite:*Game.Sprite) Self {
+    pub fn init(sprite: *Game.Sprite) Self {
         // zig fmt: off
         var s = Self{
             .body = Game.Body.init(vec2(0,0), 64, 1),
@@ -39,7 +39,7 @@ pub const Player = struct {
         _ = self;
     }
 
-    fn updateBob(self: *Self, world: *Game.World, deltaMs:i64) void {
+    fn updateBob(self: *Self, world: *Game.World, deltaMs: i64) void {
         if (deltaMs > 1000) {
             std.log.info("**BOBFRAMETOOLONG", .{});
             return;
@@ -49,11 +49,11 @@ pub const Player = struct {
         const deltaScale = @intToFloat(f32, deltaMs) / 1000.0;
 
         // update point
-        const delta = (self.bobPos.sub(self.lastBobPos)).scale(0.95);    // however far it moved last frame, with drag
+        const delta = (self.bobPos.sub(self.lastBobPos)).scale(0.95); // however far it moved last frame, with drag
         self.lastBobPos = self.bobPos;
-        self.bobPos = self.bobPos.add(delta);   // move it same again
-        self.bobPos.y += 50 * deltaScale;//(world.gravity) * deltaScale;
-_ = world;
+        self.bobPos = self.bobPos.add(delta); // move it same again
+        self.bobPos.y += 50 * deltaScale; //(world.gravity) * deltaScale;
+        _ = world;
 
         // constrain line
         const p1 = self.body.pos;
@@ -63,15 +63,15 @@ _ = world;
         // get the fractional distance the points need to move toward or away from center of
         // line to make line length correct
         const length = self.body.radius;
-        const fraction = ((length - distance) / distance) / 2;  // divide by 2 as each point moves half the distance to
-                                                               // correct the line length
+        const fraction = ((length - distance) / distance) / 2; // divide by 2 as each point moves half the distance to
+        // correct the line length
         const move = p2.sub(p1).scale(fraction);
         self.bobPos = self.bobPos.add(move);
 
-        self.angle = std.math.atan2(f32, self.body.pos.y - self.bobPos.y, self.body.pos.x - self.bobPos.x) + std.math.pi/2.0;
+        self.angle = std.math.atan2(f32, self.body.pos.y - self.bobPos.y, self.body.pos.x - self.bobPos.x) + std.math.pi / 2.0;
     }
 
-    pub fn update(self: *Self, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, basket: *const Game.Basket, towMass:f32, sound:*Game.Sound) void {
+    pub fn update(self: *Self, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, basket: *const Game.Basket, towMass: f32, sound: *Game.Sound) void {
         var imp = vec2(0, 0);
         if (Game.keystate.isDown(Game.Key.Left)) {
             sound.singleShot(.ThrustOn);
@@ -101,7 +101,7 @@ _ = world;
 
         const dir = self.body.vel.normalize();
 
-//        if (std.math.fabs(dir.x) > std.math.fabs(dir.y)) {
+        //        if (std.math.fabs(dir.x) > std.math.fabs(dir.y)) {
         if (self.body.thrust.length() > 0.1) {
             if (dir.x > 0) {
                 self.animController.setAction(self.sprite, Game.AnimationAction.ThrustRight, Game.AnimationController.LoopStyle.Forever);
@@ -115,13 +115,13 @@ _ = world;
                 self.animController.setAction(self.sprite, Game.AnimationAction.FlyLeft, Game.AnimationController.LoopStyle.Forever);
             }
         }
-//        } else {
-//            if (dir.y > 0) {
-//                self.animController.setAction(self.sprite, Game.AnimationAction.FlyDown, Game.AnimationController.LoopStyle.Forever);
-//            } else {
-//                self.animController.setAction(self.sprite, Game.AnimationAction.FlyUp, Game.AnimationController.LoopStyle.Forever);
-//            }
-//        }
+        //        } else {
+        //            if (dir.y > 0) {
+        //                self.animController.setAction(self.sprite, Game.AnimationAction.FlyDown, Game.AnimationController.LoopStyle.Forever);
+        //            } else {
+        //                self.animController.setAction(self.sprite, Game.AnimationAction.FlyUp, Game.AnimationController.LoopStyle.Forever);
+        //            }
+        //        }
     }
 
     pub fn render(self: *Self, renderer: *Game.Renderer, world: *Game.World) void {
@@ -131,7 +131,7 @@ _ = world;
 
         self.body.render(renderer, world);
 
-//        const angle = self.body.thrust.normalize().x * (std.math.pi / 6.0);
+        //        const angle = self.body.thrust.normalize().x * (std.math.pi / 6.0);
         // FIXME rotated sprites
         //self.sprite.render(renderer, posv, vec2(r * 2, r * 2), self.animController.getFrame());
         self.sprite.renderRotated(renderer, posv, vec2(r * 2, r * 2), self.animController.getFrame(), self.angle);
@@ -145,7 +145,7 @@ _ = world;
 
     pub fn getLanding(self: *const Self) ?Vec2 {
         _ = self;
-    // perhaps landing is when pos no longer moving and pos is close to a recent contact pt
+        // perhaps landing is when pos no longer moving and pos is close to a recent contact pt
         //return self.landingPos;
         return null;
     }

@@ -48,7 +48,7 @@ pub const Polygon = struct {
     triIndices: std.ArrayList([3]usize),
     aabb: Game.Rect,
 
-    pub fn init(allocator: Allocator, polyComponents: []const PolygonComponent, scale:f32, translation:Vec2) !Self {
+    pub fn init(allocator: Allocator, polyComponents: []const PolygonComponent, scale: f32, translation: Vec2) !Self {
         var s = Self{
             .polyComponents = undefined,
             .triVerts = undefined,
@@ -82,8 +82,8 @@ pub const Polygon = struct {
         return s;
     }
 
-    fn calcAABB(verts:*std.ArrayList(Vec2)) Game.Rect {
-        var aabb:Game.Rect = Game.Rect{
+    fn calcAABB(verts: *std.ArrayList(Vec2)) Game.Rect {
+        var aabb: Game.Rect = Game.Rect{
             .tl = verts.items[0],
             .br = verts.items[0],
         };
@@ -267,9 +267,9 @@ pub const Polygon = struct {
         self.polyComponents.deinit();
     }
 
-    fn posToUV(aabb: Game.Rect, p:Vec2, w:f32, h:f32) Vec2 {
-        var tx:f32 = undefined;
-        var ty:f32 = undefined;
+    fn posToUV(aabb: Game.Rect, p: Vec2, w: f32, h: f32) Vec2 {
+        var tx: f32 = undefined;
+        var ty: f32 = undefined;
 
         var px = p.x - aabb.tl.x;
         var py = p.y - aabb.tl.y;
@@ -285,7 +285,7 @@ pub const Polygon = struct {
         return vec2(tx, ty);
     }
 
-    pub fn renderTiledTexture(self: *const Self, renderer: *Game.Renderer, world: *Game.World, pos: Vec2, scale: f32, sprite:*Game.Sprite) void {
+    pub fn renderTiledTexture(self: *const Self, renderer: *Game.Renderer, world: *Game.World, pos: Vec2, scale: f32, sprite: *Game.Sprite) void {
         for (self.triIndices.items) |triIndex| {
             const v0model = self.triVerts.items[triIndex[0]];
             const v1model = self.triVerts.items[triIndex[1]];
@@ -307,19 +307,12 @@ pub const Polygon = struct {
             const uv2 = posToUV(self.aabb, v2model, w, h);
 
             // draw triangle
-            renderer.drawTriangleTex(
-                @floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y),
-                @floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y),
-                @floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y),
-                uv0.x, uv0.y,
-                uv1.x, uv1.y,
-                uv2.x, uv2.y,
-                sprite.sheetSurf);
+            renderer.drawTriangleTex(@floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), @floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), @floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), uv0.x, uv0.y, uv1.x, uv1.y, uv2.x, uv2.y, sprite.sheetSurf);
 
-//            // draw outline
-//            renderer.drawLine(@floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), @floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), 0xFF000000);
-//            renderer.drawLine(@floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), @floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), 0xFF000000);
-//            renderer.drawLine(@floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), @floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), 0xFF000000);
+            //            // draw outline
+            //            renderer.drawLine(@floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), @floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), 0xFF000000);
+            //            renderer.drawLine(@floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), @floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), 0xFF000000);
+            //            renderer.drawLine(@floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), @floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), 0xFF000000);
 
         }
     }
@@ -334,11 +327,7 @@ pub const Polygon = struct {
             const v2 = world.worldToView(self.triVerts.items[triIndex[2]].scale(scale).add(pos));
 
             // draw triangle
-            renderer.drawTriangle(
-                @floatToInt(i32, v0.x), @floatToInt(i32, v0.y),
-                @floatToInt(i32, v1.x), @floatToInt(i32, v1.y),
-                @floatToInt(i32, v2.x), @floatToInt(i32, v2.y),
-                0xFFFF0000);
+            renderer.drawTriangle(@floatToInt(i32, v0.x), @floatToInt(i32, v0.y), @floatToInt(i32, v1.x), @floatToInt(i32, v1.y), @floatToInt(i32, v2.x), @floatToInt(i32, v2.y), 0xFFFF0000);
 
             if (lines) {
                 // draw outline
@@ -395,7 +384,6 @@ pub const Polygon = struct {
 
         return null;
     }
-
 };
 
 //var mypoly: Game.Polygon = undefined;

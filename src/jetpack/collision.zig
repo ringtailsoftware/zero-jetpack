@@ -3,7 +3,6 @@ const Game = @import("game.zig").Game;
 const vec2 = Game.vec2;
 const Vec2 = Game.Vec2;
 
-
 pub const Collision = struct {
     // https://stackoverflow.com/a/10392860/283981
     pub fn intersectLineCircle(location: Vec2, radius: f32, lineFrom: Vec2, lineTo: Vec2) ?[2]Vec2 {
@@ -75,4 +74,3 @@ pub const Collision = struct {
         return collision;
     }
 };
-

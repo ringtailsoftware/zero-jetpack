@@ -21,4 +21,3 @@ fn genMap() [assets.files.len]EmbeddedAsset {
     }
     return eas;
 }
-

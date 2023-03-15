@@ -22,7 +22,7 @@ pub const Body = struct {
     age: i64,
     mass: f32,
 
-    pub fn init(pos:Vec2, radius:f32, mass:f32) Self {
+    pub fn init(pos: Vec2, radius: f32, mass: f32) Self {
         // zig fmt: off
         var s = Self{
             .pos = pos,
@@ -44,12 +44,12 @@ pub const Body = struct {
         return s;
     }
 
-    pub fn applyImpulse(self: *Self, impulse:Vec2) void {
+    pub fn applyImpulse(self: *Self, impulse: Vec2) void {
         self.impulse = impulse;
         self.impulseTime = self.age;
     }
 
-    pub fn update(self: *Self, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, basket: *const Game.Basket, extraMass:f32) void {
+    pub fn update(self: *Self, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, basket: *const Game.Basket, extraMass: f32) void {
         if (deltaMs > 1000) {
             std.log.info("**FRAMETOOLONG", .{});
             return;
@@ -60,18 +60,18 @@ pub const Body = struct {
 
         const speed = self.vel.length();
 
-// decay thrust
-//        self.thrust = self.thrust.scale(std.math.pow(f32, self.thrustDecay, deltaScale));
+        // decay thrust
+        //        self.thrust = self.thrust.scale(std.math.pow(f32, self.thrustDecay, deltaScale));
 
         if (self.impulse != null) {
             const thr = self.impulse.?;
             self.thrust = thr;
-//            self.thrust = self.thrust.add(thr);
+            //            self.thrust = self.thrust.add(thr);
             if (self.age > self.impulseTime + 250) {
                 self.impulse = null;
             }
         } else {
-            self.thrust = vec2(0,0);
+            self.thrust = vec2(0, 0);
         }
 
         // apply thrust

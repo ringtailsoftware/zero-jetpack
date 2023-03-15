@@ -14,7 +14,7 @@ pub const World = struct {
     viewBoxFraction: f32,
     gravity: f32,
 
-    pub fn init(worldSize:Vec2, screenSize:Vec2) Self {
+    pub fn init(worldSize: Vec2, screenSize: Vec2) Self {
         return Self{
             .worldWindow = Rect{ .tl = vec2(0, 0), .br = vec2(0, 0) }, // the piece of the world being looked at
             .viewBox = Rect{ .tl = vec2(0, 0), .br = vec2(0, 0) }, // the box in which player can move without scrolling

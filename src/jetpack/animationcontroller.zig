@@ -35,12 +35,12 @@ pub const AnimationController = struct {
     pub fn finished(self: *const Self) bool {
         const animFrames = self.sprite.getAnim(self.action);
         if (animFrames == null) {
-            return false;    // not valid, loop forever
+            return false; // not valid, loop forever
         }
         const t = Game.millis();
         const totalDelays = getTotalDelays(animFrames.?);
 
-        switch(self.loopStyle) {
+        switch (self.loopStyle) {
             .Single => {
                 return (t > totalDelays + self.startTime);
             },

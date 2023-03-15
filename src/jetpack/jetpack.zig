@@ -21,8 +21,8 @@ var mix_left: [RENDER_QUANTUM_FRAMES]f32 = undefined;
 var mix_right: [RENDER_QUANTUM_FRAMES]f32 = undefined;
 var leftright: [RENDER_QUANTUM_FRAMES * 2]f32 = undefined;
 
-var music_volume:f32 = 0.5;
-var fx_volume:f32 = 1.0;
+var music_volume: f32 = 0.5;
+var fx_volume: f32 = 1.0;
 
 var prng = std.rand.DefaultPrng.init(0);
 var rand = prng.random();
@@ -30,23 +30,22 @@ var rand = prng.random();
 const NUMBALLS = 1000;
 var balls: [NUMBALLS]Ball = undefined;
 
-
 var gSurface: Game.Surface = undefined;
 var gRenderer: Game.Renderer = undefined;
-var gWorld:Game.World = undefined;
-var zoom:f32 = 0.5;
-var gSprites:Game.Sprites = undefined;
-var gRock:Game.Rock = undefined;
-var gBasket:Game.Basket = undefined;
-var gPlayer:Game.Player = undefined;
-var gEntities:Game.Entities = undefined;
-var gFontBig:Game.Font = undefined;
-var gFontSmall:Game.Font = undefined;
-var gCurDialog:?Game.Dialog = undefined;
+var gWorld: Game.World = undefined;
+var zoom: f32 = 0.5;
+var gSprites: Game.Sprites = undefined;
+var gRock: Game.Rock = undefined;
+var gBasket: Game.Basket = undefined;
+var gPlayer: Game.Player = undefined;
+var gEntities: Game.Entities = undefined;
+var gFontBig: Game.Font = undefined;
+var gFontSmall: Game.Font = undefined;
+var gCurDialog: ?Game.Dialog = undefined;
 var gBasketpoly: Game.Polygon = undefined;
 var gCurLevel: usize = 0;
 var gSmashHelpSeen: bool = false;
-var gSound:Game.Sound = undefined;
+var gSound: Game.Sound = undefined;
 
 var pmodctx: pocketmod.pocketmod_context = undefined;
 //const mod_data = Game.Assets.ASSET_MAP.get("space_debris.mod").?;
@@ -67,7 +66,7 @@ export fn zmalloc(size: c_int) callconv(.C) ?[*]u8 {
     return mem.ptr + @sizeOf(usize);
 }
 
-export fn zcalloc(count:c_int, size: c_int) callconv(.C) ?[*]u8 {
+export fn zcalloc(count: c_int, size: c_int) callconv(.C) ?[*]u8 {
     //_ = console.print("zcalloc {d}\n", .{size}) catch 0;
 
     var mem: ?[*]u8 = zmalloc(count * size);
@@ -136,11 +135,10 @@ export fn zmemcpy(dst: [*]u8, src: [*]const u8, len: c_int) [*]u8 {
     @memcpy(dst, src, @intCast(usize, len));
     return dst;
 }
-export fn zmemset(dst: [*]u8, val:c_int, len: c_int) [*]u8 {
+export fn zmemset(dst: [*]u8, val: c_int, len: c_int) [*]u8 {
     @memset(dst, @intCast(u8, val), @intCast(usize, len));
     return dst;
 }
-
 
 const Ball = struct {
     const Self = @This();
@@ -175,7 +173,7 @@ const Ball = struct {
         const vp = gWorld.worldToView(self.pos);
         const s = gWorld.worldToViewScale();
 
-        self.sprite.render(renderer, vp, vec2(16,16).scale(s.x), self.animationController.getFrame());
+        self.sprite.render(renderer, vp, vec2(16, 16).scale(s.x), self.animationController.getFrame());
     }
 };
 
@@ -199,7 +197,6 @@ pub fn panic(msg: []const u8, trace: ?*std.builtin.StackTrace, ret_addr: ?usize)
     _ = console.print("PANIC: {s}", .{msg}) catch 0;
     while (true) {}
 }
-
 
 export fn keyevent(keycode: u32, down: bool) void {
     if (down) {
@@ -256,12 +253,11 @@ fn randColour() u32 {
     return 0xFF000000 | @as(u32, b8) << 16 | @as(u32, g8) << 8 | @as(u32, r8);
 }
 
-fn resize(w:i32, h:i32) void {
+fn resize(w: i32, h: i32) void {
     const screenRect = Game.Rect.init(0, 0, @intToFloat(f32, w), @intToFloat(f32, h));
     gWorld.setScreenViewport(screenRect, zoom);
     _ = console.print("zoom {d}\n", .{zoom}) catch 0;
 }
-
 
 export fn init() void {
     frameCount = 0;
@@ -274,7 +270,7 @@ export fn init() void {
     Game.keystate.init();
 
     gWorld = Game.World.init(vec2(9999999, 9999999), vec2(WIDTH, HEIGHT));
-    resize(WIDTH, HEIGHT);  // recalculate view
+    resize(WIDTH, HEIGHT); // recalculate view
 
     gSurface = Game.Surface.init(&gfxFramebuffer, 0, 0, WIDTH, HEIGHT, WIDTH);
     gRenderer = Game.Renderer.init(&gSurface);
@@ -289,7 +285,7 @@ export fn init() void {
         return;
     };
 
-    var coins:[7]*Game.Sprite = .{
+    var coins: [7]*Game.Sprite = .{
         gSprites.get("goldcoin").?,
         gSprites.get("redcoin").?,
         gSprites.get("silvercoin").?,
@@ -300,20 +296,17 @@ export fn init() void {
     };
 
     for (&balls) |*ball| {
-        ball.* = Ball.init(
-            vec2(rand.float(f32) * @as(f32, WIDTH*2) - WIDTH, rand.float(f32) * @as(f32, HEIGHT*2) - HEIGHT),    // pos
+        ball.* = Ball.init(vec2(rand.float(f32) * @as(f32, WIDTH * 2) - WIDTH, rand.float(f32) * @as(f32, HEIGHT * 2) - HEIGHT), // pos
             vec2(rand.float(f32) * 4 - 2, rand.float(f32) * 4 - 2), // direction
-            coins[rand.int(usize) % coins.len]
-        );
+            coins[rand.int(usize) % coins.len]);
     }
 
-    Game.initTime();    // zero millis() clock
+    Game.initTime(); // zero millis() clock
 
     setupLevel(gCurLevel);
-
 }
 
-fn setupLevel(level:usize) void {
+fn setupLevel(level: usize) void {
     var buf: [16]u8 = undefined;
     var fname_png = std.fmt.bufPrint(&buf, "level{d}.png", .{level}) catch |err| {
         _ = console.print("err {any}\n", .{err}) catch 0;
@@ -337,7 +330,26 @@ fn setupLevel(level:usize) void {
             unreachable;
         };
 
-        const pv = [_]Vec2{vec2(-1,-0.30970149253731355),vec2(-1,0.30970149253731355),vec2(1,0.30970149253731355),vec2(1,-0.30970149253731355),vec2(0.6492537313432838,-0.30970149253731355),vec2(0.6169154228855727,-0.21268656716417908),vec2(0.5074626865671645,-0.043532338308457375),vec2(0.35074626865671643,0.08582089552238813),vec2(0.16417910447761197,0.16293532338308453),vec2(0.06467661691542292,0.18283582089552258),vec2(-0.0024875621890544375,0.18781094527363176),vec2(-0.13432835820895517,0.1753731343283582),vec2(-0.26119402985074613,0.1380597014925373),vec2(-0.37810945273631835,0.07338308457711454),vec2(-0.4303482587064674,0.03109452736318441),vec2(-0.5049751243781093,-0.0385572139303482),vec2(-0.6144278606965174,-0.21268656716417908),vec2(-0.6517412935323383,-0.30970149253731355),};
+        const pv = [_]Vec2{
+            vec2(-1, -0.30970149253731355),
+            vec2(-1, 0.30970149253731355),
+            vec2(1, 0.30970149253731355),
+            vec2(1, -0.30970149253731355),
+            vec2(0.6492537313432838, -0.30970149253731355),
+            vec2(0.6169154228855727, -0.21268656716417908),
+            vec2(0.5074626865671645, -0.043532338308457375),
+            vec2(0.35074626865671643, 0.08582089552238813),
+            vec2(0.16417910447761197, 0.16293532338308453),
+            vec2(0.06467661691542292, 0.18283582089552258),
+            vec2(-0.0024875621890544375, 0.18781094527363176),
+            vec2(-0.13432835820895517, 0.1753731343283582),
+            vec2(-0.26119402985074613, 0.1380597014925373),
+            vec2(-0.37810945273631835, 0.07338308457711454),
+            vec2(-0.4303482587064674, 0.03109452736318441),
+            vec2(-0.5049751243781093, -0.0385572139303482),
+            vec2(-0.6144278606965174, -0.21268656716417908),
+            vec2(-0.6517412935323383, -0.30970149253731355),
+        };
 
         var polycomps = [1]Game.PolygonComponent{
             Game.PolygonComponent{
@@ -397,7 +409,7 @@ export fn update(deltaMs: u32) void {
             resize(WIDTH, HEIGHT);
         }
         if (Game.keystate.isDown(Game.Key.Act)) {
-            _ = console.print("pos {d},{d}\n", .{gPlayer.body.pos.x, gPlayer.body.pos.y}) catch 0;
+            _ = console.print("pos {d},{d}\n", .{ gPlayer.body.pos.x, gPlayer.body.pos.y }) catch 0;
         }
 
         for (&balls) |*ball| {

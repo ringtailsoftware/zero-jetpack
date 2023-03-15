@@ -11,7 +11,7 @@ pub const Rock = struct {
     scale: f32,
     sprite: *Game.Sprite,
 
-    pub fn init(poly: Game.Polygon, sprite:*Game.Sprite) Self {
+    pub fn init(poly: Game.Polygon, sprite: *Game.Sprite) Self {
         return Self{
             .poly = poly,
             .pos = vec2(0, 0),
@@ -19,13 +19,13 @@ pub const Rock = struct {
             .sprite = sprite,
         };
     }
-    
+
     pub fn deinit(self: *Self) void {
         self.poly.deinit();
     }
 
     pub fn render(self: *const Self, renderer: *Game.Renderer, world: *Game.World) void {
-//        self.poly.render(renderer, world, self.pos, self.scale);
+        //        self.poly.render(renderer, world, self.pos, self.scale);
         self.poly.renderTiledTexture(renderer, world, self.pos, self.scale, self.sprite);
     }
 

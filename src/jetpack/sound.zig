@@ -17,15 +17,15 @@ pub const SoundFx = enum {
 
 const RENDER_QUANTUM_FRAMES = 128; // WebAudio's render quantum size
 
-const ThrustInstrument = 125;    // MIDI Helicopter
+const ThrustInstrument = 125; // MIDI Helicopter
 const ThrustPitch = 50;
-const SmashInstrument = 112;    // MIDI bell
+const SmashInstrument = 112; // MIDI bell
 const SmashPitch = 45;
-const InBasketInstrument = 112;    // MIDI bell
+const InBasketInstrument = 112; // MIDI bell
 const InBasketPitch = 70;
-const TalkInstrument = 54;    // MIDI synth voice
+const TalkInstrument = 54; // MIDI synth voice
 
-const talkPitches:[10]i32 = .{40, 29, 62, 50, 34, 49, 24, 56, 32, 19};
+const talkPitches: [10]i32 = .{ 40, 29, 62, 50, 34, 49, 24, 56, 32, 19 };
 
 pub const Sound = struct {
     const Self = @This();
@@ -39,12 +39,12 @@ pub const Sound = struct {
     talkStartTime: u32,
     talkCurPitch: i32,
 
-    pub fn init(sampleRate:f32, sf2name:[]const u8) Self {
+    pub fn init(sampleRate: f32, sf2name: []const u8) Self {
         // create the synthesizer
-// related to https://github.com/ziglang/zig/issues/14917 ?
-//        const synth_font = Game.Assets.ASSET_MAP.get(sf2name).?;
-_ = sf2name;
-const synth_font = @embedFile("assets/gzdoom.sf2");
+        // related to https://github.com/ziglang/zig/issues/14917 ?
+        //        const synth_font = Game.Assets.ASSET_MAP.get(sf2name).?;
+        _ = sf2name;
+        const synth_font = @embedFile("assets/gzdoom.sf2");
         var fbs = std.io.fixedBufferStream(synth_font);
         var reader = fbs.reader();
         var sound_font = SoundFont.init(allocator, reader) catch unreachable;
@@ -52,7 +52,7 @@ const synth_font = @embedFile("assets/gzdoom.sf2");
         settings.block_size = RENDER_QUANTUM_FRAMES;
         var synthesizer = Synthesizer.init(allocator, sound_font, settings) catch unreachable;
 
-        return Self {
+        return Self{
             .synthesizer = synthesizer,
             .synthBuf_left = undefined,
             .synthBuf_right = undefined,
@@ -64,17 +64,17 @@ const synth_font = @embedFile("assets/gzdoom.sf2");
         };
     }
 
-    pub fn mixSoundQuantum(self:*Self, mix_left:*[RENDER_QUANTUM_FRAMES]f32, mix_right:*[RENDER_QUANTUM_FRAMES]f32, volume:f32) void {
+    pub fn mixSoundQuantum(self: *Self, mix_left: *[RENDER_QUANTUM_FRAMES]f32, mix_right: *[RENDER_QUANTUM_FRAMES]f32, volume: f32) void {
         self.synthesizer.render(&self.synthBuf_left, &self.synthBuf_right);
 
-        if (self.thrusting) {   // avoid thrust sound staying on if main loop is stuck doing something (e.g. modal Dialog)
+        if (self.thrusting) { // avoid thrust sound staying on if main loop is stuck doing something (e.g. modal Dialog)
             if (Game.millis() > self.thrustOnTime + 1000) {
                 self.singleShot(.ThrustOff);
             }
         }
 
         if (self.talking) {
-            const pitchIndex:usize = ((Game.millis() - self.talkStartTime) / 250) % talkPitches.len;
+            const pitchIndex: usize = ((Game.millis() - self.talkStartTime) / 250) % talkPitches.len;
             if (talkPitches[pitchIndex] != self.talkCurPitch) {
                 self.talkCurPitch = talkPitches[pitchIndex];
                 self.synthesizer.noteOffAllChannel(1, false);
@@ -83,14 +83,14 @@ const synth_font = @embedFile("assets/gzdoom.sf2");
             }
         }
 
-        var i:usize = 0;
+        var i: usize = 0;
         while (i < RENDER_QUANTUM_FRAMES) : (i += 1) {
             mix_left[i] += self.synthBuf_left[i] * volume;
             mix_right[i] += self.synthBuf_right[i] * volume;
         }
     }
 
-    pub fn talk(self:*Self, en:bool) void {
+    pub fn talk(self: *Self, en: bool) void {
         self.talking = en;
         self.talkStartTime = Game.millis();
 
@@ -99,8 +99,8 @@ const synth_font = @embedFile("assets/gzdoom.sf2");
         }
     }
 
-    pub fn singleShot(self:*Self, fx: SoundFx) void {
-        switch(fx) {
+    pub fn singleShot(self: *Self, fx: SoundFx) void {
+        switch (fx) {
             .ThrustOn => {
                 if (!self.thrusting) {
                     self.thrusting = true;
@@ -122,8 +122,7 @@ const synth_font = @embedFile("assets/gzdoom.sf2");
             .InBasket => {
                 self.synthesizer.processMidiMessage(0, 0xC0, InBasketInstrument, 0);
                 self.synthesizer.noteOn(0, InBasketPitch, 127);
-            }
-
+            },
         }
     }
 };

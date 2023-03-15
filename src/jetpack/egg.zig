@@ -32,13 +32,13 @@ pub const Egg = struct {
     lastBobPos: Vec2,
     lastBobSpeed: f32,
     lastBobVel: Vec2,
-    angle:f32,
-    angleVel:f32,
-    startPos:Vec2,
-    autorespawn:bool,
-    sizeMultiplier:f32,
+    angle: f32,
+    angleVel: f32,
+    startPos: Vec2,
+    autorespawn: bool,
+    sizeMultiplier: f32,
 
-    pub fn init(sprite:*Game.Sprite, pos:Vec2, autorespawn:bool, sizeMultiplier:f32) Self {
+    pub fn init(sprite: *Game.Sprite, pos: Vec2, autorespawn: bool, sizeMultiplier: f32) Self {
         // zig fmt: off
         var s = Self{
             .autorespawn = autorespawn,
@@ -61,7 +61,7 @@ pub const Egg = struct {
         return s;
     }
 
-    fn updateBob(self: *Self, world: *Game.World, player: *const Game.Player, deltaMs:i64) void {
+    fn updateBob(self: *Self, world: *Game.World, player: *const Game.Player, deltaMs: i64) void {
         if (deltaMs > 1000) {
             std.log.info("**EGGBOBFRAMETOOLONG", .{});
             return;
@@ -71,13 +71,13 @@ pub const Egg = struct {
         const deltaScale = @intToFloat(f32, deltaMs) / 1000.0;
 
         // update point
-        const delta = (self.body.pos.sub(self.lastBobPos)).scale(0.99);    // however far it moved last frame, with drag
-        self.lastBobSpeed = delta.length() * (1/deltaScale);
-        self.lastBobVel = delta.scale(1/deltaScale);
+        const delta = (self.body.pos.sub(self.lastBobPos)).scale(0.99); // however far it moved last frame, with drag
+        self.lastBobSpeed = delta.length() * (1 / deltaScale);
+        self.lastBobVel = delta.scale(1 / deltaScale);
         self.lastBobPos = self.body.pos;
-        self.body.pos = self.body.pos.add(delta);   // move it same again
-        self.body.pos.y += 10 * deltaScale;//(world.gravity) * deltaScale;
-_ = world;
+        self.body.pos = self.body.pos.add(delta); // move it same again
+        self.body.pos.y += 10 * deltaScale; //(world.gravity) * deltaScale;
+        _ = world;
 
         // constrain line
         const p1 = player.body.pos;
@@ -86,25 +86,25 @@ _ = world;
         const distance = p2.sub(p1).length();
         // get the fractional distance the points need to move toward or away from center of
         // line to make line length correct
-        var length:f32 = TOW_LEN;
+        var length: f32 = TOW_LEN;
         // allow length to shorten if player is nearer
         const toPlayer = player.body.pos.sub(self.body.pos);
         const distToPlayer = toPlayer.length();
         if (distToPlayer < length) {
-            length  = distToPlayer;
+            length = distToPlayer;
         }
 
-        const fraction = ((length - distance) / distance) / 2;  // divide by 2 as each point moves half the distance to
-                                                               // correct the line length
+        const fraction = ((length - distance) / distance) / 2; // divide by 2 as each point moves half the distance to
+        // correct the line length
         const move = p2.sub(p1).scale(fraction);
         self.body.pos = self.body.pos.add(move);
 
         const prevAngle = self.angle;
-        self.angle = std.math.atan2(f32, player.body.pos.y - self.body.pos.y, player.body.pos.x - self.body.pos.x) + std.math.pi/2.0;
+        self.angle = std.math.atan2(f32, player.body.pos.y - self.body.pos.y, player.body.pos.x - self.body.pos.x) + std.math.pi / 2.0;
         self.angleVel = (self.angle - prevAngle) / deltaScale;
     }
 
-    pub fn update(self: *Self, entities:*Game.Entities, id:Game.EntityId, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, player: *Game.Player, basket: *Game.Basket, sound:*Game.Sound) !void {
+    pub fn update(self: *Self, entities: *Game.Entities, id: Game.EntityId, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, player: *Game.Player, basket: *Game.Basket, sound: *Game.Sound) !void {
         var runphys = true;
 
         // scale factor deltaMs to give constant speed regardless of fps
@@ -113,7 +113,7 @@ _ = world;
         const toPlayer = player.body.pos.sub(self.body.pos);
         const distToPlayer = toPlayer.length();
 
-        switch(self.state) {
+        switch (self.state) {
             .Init => {
                 // push away in some random direction
                 //self.body.applyImpulse(vec2(rand.float(f32)*2 - 1 , rand.float(f32)*2 - 1).normalize().scale(world.gravity));
@@ -131,7 +131,7 @@ _ = world;
                 }
             },
             .UnderTow => {
-                const oldPos = self.body.pos;   // hack, should be stopping updateBob changing it directly
+                const oldPos = self.body.pos; // hack, should be stopping updateBob changing it directly
                 self.updateBob(world, player, deltaMs);
                 runphys = false;
                 if (rock.collideCircle(self.body.pos, self.body.radius)) |inter| {
@@ -160,7 +160,7 @@ _ = world;
                         std.log.info("BASKET LANDING", .{});
                         sound.singleShot(.InBasket);
                         self.state = .InBasket;
-                        self.body.vel = vec2(0,0);
+                        self.body.vel = vec2(0, 0);
                     }
                 }
 
@@ -173,10 +173,10 @@ _ = world;
             },
             .Smashed => {
                 // wait for animation to complete
-                self.angle += self.angleVel * deltaScale;    // no longer attached, spin at last angular vel
-                self.angleVel *= 0.98;  // not framerate independent, but slow it down
+                self.angle += self.angleVel * deltaScale; // no longer attached, spin at last angular vel
+                self.angleVel *= 0.98; // not framerate independent, but slow it down
                 if (self.animController.finished()) {
-                    try entities.remove(id);    // safe as doesn't remove us immediately
+                    try entities.remove(id); // safe as doesn't remove us immediately
                     if (self.autorespawn) {
                         _ = try entities.addEgg(self.sprite, self.startPos, true, self.sizeMultiplier);
                     }
@@ -186,8 +186,7 @@ _ = world;
                 _ = try entities.addFloater(self.body.pos, "goldcoin");
                 self.state = .Finished;
             },
-            .Finished => {
-            },
+            .Finished => {},
         }
 
         if (runphys) {

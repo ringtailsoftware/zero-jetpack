@@ -8,9 +8,9 @@ pub const Scancode = enum(u8) {
     down = 40,
     q = 81,
     space = 32,
-    equals = 61,    // firefox
+    equals = 61, // firefox
     equals2 = 187,
-    minus = 173,    // firefox
+    minus = 173, // firefox
     minus2 = 189,
     escape = 27,
 };
