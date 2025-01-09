@@ -8,7 +8,7 @@ A game built on https://github.com/ringtailsoftware/zig-wasm-audio-framebuffer
 
 Fly Zero the Ziguana through space, collect the eggs and deposit them carefully in the basket.
 
-# Build and test (assumes you have zig installed)
+# Build and run
 
 ```bash
 zig build && zig build serve -- zig-out -p 8000
