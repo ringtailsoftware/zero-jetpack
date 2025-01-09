@@ -22,7 +22,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// Initializes all values of the vector with the given value.
                 pub fn all(value: Real) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = value;
                     }
                     return result;
@@ -31,7 +31,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// adds all components from `a` with the components of `b`.
                 pub fn add(a: Self, b: Self) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = @field(a, fld.name) + @field(b, fld.name);
                     }
                     return result;
@@ -40,7 +40,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// subtracts all components from `a` with the components of `b`.
                 pub fn sub(a: Self, b: Self) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = @field(a, fld.name) - @field(b, fld.name);
                     }
                     return result;
@@ -49,7 +49,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// multiplies all components from `a` with the components of `b`.
                 pub fn mul(a: Self, b: Self) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = @field(a, fld.name) * @field(b, fld.name);
                     }
                     return result;
@@ -58,7 +58,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// divides all components from `a` by the components of `b`.
                 pub fn div(a: Self, b: Self) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = @field(a, fld.name) / @field(b, fld.name);
                     }
                     return result;
@@ -67,7 +67,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// multiplies all components by a scalar value.
                 pub fn scale(a: Self, b: Real) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = @field(a, fld.name) * b;
                     }
                     return result;
@@ -77,7 +77,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// This is the sum of products of all components.
                 pub fn dot(a: Self, b: Self) Real {
                     var result: Real = 0;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         result += @field(a, fld.name) * @field(b, fld.name);
                     }
                     return result;
@@ -96,7 +96,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// returns either a normalized vector (`length() = 1`) or `zero` if the vector
                 /// has length 0.
                 pub fn normalize(vec: Self) Self {
-                    var len = vec.length();
+                    const len = vec.length();
                     return if (len != 0.0)
                         vec.scale(1.0 / vec.length())
                     else
@@ -106,7 +106,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// applies component-wise absolute values
                 pub fn abs(a: Self) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = std.math.absFloat(@field(a, fld.name));
                     }
                     return result;
@@ -159,7 +159,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// returns a new vector where each component is the minimum of the components of the input vectors.
                 pub fn componentMin(a: Self, b: Self) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = std.math.min(@field(a, fld.name), @field(b, fld.name));
                     }
                     return result;
@@ -168,7 +168,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 /// returns a new vector where each component is the maximum of the components of the input vectors.
                 pub fn componentMax(a: Self, b: Self) Self {
                     var result: Self = undefined;
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         @field(result, fld.name) = std.math.max(@field(a, fld.name), @field(b, fld.name));
                     }
                     return result;
@@ -181,7 +181,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 }
 
                 pub fn eql(a: Self, b: Self) bool {
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         if (@field(a, fld.name) != @field(b, fld.name))
                             return false;
                     }
@@ -189,7 +189,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 }
 
                 pub fn approxEqAbs(a: Self, b: Self, tolerance: Real) bool {
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         if (!std.math.approxEqAbs(Real, @field(a, fld.name), @field(b, fld.name), tolerance))
                             return false;
                     }
@@ -197,7 +197,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                 }
 
                 pub fn approxEqRel(a: Self, b: Self, tolerance: Real) bool {
-                    inline for (@typeInfo(Self).Struct.fields) |fld| {
+                    inline for (@typeInfo(Self).@"struct".fields) |fld| {
                         if (!std.math.approxEqRel(Real, @field(a, fld.name), @field(b, fld.name), tolerance))
                             return false;
                     }
@@ -551,7 +551,7 @@ pub fn SpecializeOn(comptime Real: type) type {
             /// `aspect` is the screen aspect ratio (width / height)
             /// `near` is the distance of the near clip plane, whereas `far` is the distance to the far clip plane.
             pub fn createPerspective(fov: Real, aspect: Real, near: Real, far: Real) Self {
-                std.debug.assert(@fabs(aspect - 0.001) > 0);
+                std.debug.assert(@abs(aspect - 0.001) > 0);
 
                 const tanHalfFovy = @tan(fov / 2);
 
@@ -566,11 +566,11 @@ pub fn SpecializeOn(comptime Real: type) type {
 
             /// creates a rotation matrix around a certain axis.
             pub fn createAngleAxis(axis: Vec3, angle: Real) Self {
-                var cos = @cos(angle);
-                var sin = @sin(angle);
-                var x = axis.x;
-                var y = axis.y;
-                var z = axis.z;
+                const cos = @cos(angle);
+                const sin = @sin(angle);
+                const x = axis.x;
+                const y = axis.y;
+                const z = axis.z;
 
                 return Self{
                     .fields = [4][4]Real{
@@ -655,7 +655,7 @@ pub fn SpecializeOn(comptime Real: type) type {
             /// only works on float matrices
             pub fn invert(src: Self) ?Self {
                 // https://github.com/stackgl/gl-mat4/blob/master/invert.js
-                const a = @bitCast([16]Real, src.fields);
+                const a: [16]Real = @bitCast(src.fields);
 
                 const a00 = a[0];
                 const a01 = a[1];
@@ -714,7 +714,7 @@ pub fn SpecializeOn(comptime Real: type) type {
                     (a20 * b03 - a21 * b01 + a22 * b00) * det, // 15
                 };
                 return Self{
-                    .fields = @bitCast([4][4]Real, out),
+                    .fields = @bitCast(out),
                 };
             }
         };

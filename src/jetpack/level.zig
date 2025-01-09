@@ -36,7 +36,7 @@ pub const Level = struct {
         var s: Self = undefined;
 
         // split incoming text into 3 lines to display in dialog
-        var splits = std.mem.split(u8, text, "\n");
+        var splits = std.mem.splitAny(u8, text, "\n");
         var n: usize = 0;
         while (splits.next()) |line| {
             std.log.err("line {d} = {s}", .{ n, line });
@@ -62,7 +62,7 @@ pub const Level = struct {
         };
 
         // world is centred at 0,0. Pixels will need offsetting
-        const sz = vec2(@intToFloat(f32, im.width) * s.rockScale, @intToFloat(f32, im.height) * s.rockScale);
+        const sz = vec2(Game.compat_intToFloat(f32, im.width) * s.rockScale, Game.compat_intToFloat(f32, im.height) * s.rockScale);
 
         var it = im.iterator();
         var i: usize = 0;
@@ -87,7 +87,7 @@ pub const Level = struct {
 
                 std.log.err("{d} {d}", .{ szm, pix.r });
                 eggs.append(EggInfo{
-                    .pos = vec2((@intToFloat(f32, x) + 0.5) * s.rockScale, (@intToFloat(f32, y) + 0.5) * s.rockScale).sub(sz.scale(0.5)),
+                    .pos = vec2((Game.compat_intToFloat(f32, x) + 0.5) * s.rockScale, (Game.compat_intToFloat(f32, y) + 0.5) * s.rockScale).sub(sz.scale(0.5)),
                     .sizeMultiplier = szm,
                 }) catch |err| {
                     std.log.err("err={any}", .{err});
@@ -96,11 +96,11 @@ pub const Level = struct {
             }
             // blue is player start
             if (pix.b != 0 and pix.r == 0 and pix.g == 0) {
-                s.startPos = vec2((@intToFloat(f32, x) + 0.5) * s.rockScale, (@intToFloat(f32, y) + 0.5) * s.rockScale).sub(sz.scale(0.5));
+                s.startPos = vec2((Game.compat_intToFloat(f32, x) + 0.5) * s.rockScale, (Game.compat_intToFloat(f32, y) + 0.5) * s.rockScale).sub(sz.scale(0.5));
             }
             // green is basket
             if (pix.g != 0 and pix.r == 0 and pix.b == 0) {
-                s.basketPos = vec2((@intToFloat(f32, x) + 0.5) * s.rockScale, (@intToFloat(f32, y) + 0.5) * s.rockScale).sub(sz.scale(0.5));
+                s.basketPos = vec2((Game.compat_intToFloat(f32, x) + 0.5) * s.rockScale, (Game.compat_intToFloat(f32, y) + 0.5) * s.rockScale).sub(sz.scale(0.5));
             }
             i += 1;
         }

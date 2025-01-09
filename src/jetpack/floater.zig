@@ -5,8 +5,8 @@ const vec2 = Game.vec2;
 const Vec2 = Game.Vec2;
 const Rect = Game.Rect;
 
-const RndGen = std.rand.DefaultPrng;
-var prng = std.rand.DefaultPrng.init(0);
+const RndGen = std.Random.DefaultPrng;
+var prng = std.Random.DefaultPrng.init(0);
 var rand = prng.random();
 
 const FLOATER_SIZE = 32;
@@ -67,7 +67,7 @@ pub const Floater = struct {
     pub fn render(self: *Self, renderer: *Game.Renderer, world: *Game.World) void {
         const posv = world.worldToView(self.body.pos);
         const s = world.worldToViewScale();
-        var r = self.body.radius * std.math.min(s.x, s.y); // worldWindow might be different aspect, fudge it
+        const r = self.body.radius * @min(s.x, s.y); // worldWindow might be different aspect, fudge it
 
         self.body.render(renderer, world);
         self.sprite.render(renderer, posv, vec2(r * 2, r * 2), self.animController.getFrame());

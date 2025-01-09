@@ -80,11 +80,7 @@ pub const Sprite = struct {
         s.animActions = animActions;
         s.sheetSurf = sheetSurf;
         s.size = size;
-        s.name = allocator.alloc(u8, name.len) catch |err| {
-            allocator.destroy(s);
-            return err;
-        };
-        std.mem.copy(u8, s.name, name);
+        s.name = try allocator.dupe(u8, name);
         return s;
     }
 
@@ -101,10 +97,10 @@ pub const Sprite = struct {
 
         var spriteSurf = Game.Surface.init(sheetSurf.oc.pixels, srcx, srcy, srcw, srch, sheetSurf.width);
 
-        const dstx = @floatToInt(i32, pos.x - dim.x / 2);
-        const dsty = @floatToInt(i32, pos.y - dim.y / 2);
+        const dstx = Game.compat_floatToInt(i32, pos.x - dim.x / 2);
+        const dsty = Game.compat_floatToInt(i32, pos.y - dim.y / 2);
 
-        renderer.sprite_blend(&spriteSurf, dstx, dsty, @floatToInt(i32, dim.x), @floatToInt(i32, dim.y));
+        renderer.sprite_blend(&spriteSurf, dstx, dsty, Game.compat_floatToInt(i32, dim.x), Game.compat_floatToInt(i32, dim.y));
     }
 
     pub fn renderRotated(self: *const Self, renderer: *Game.Renderer, pos: Vec2, dim: Vec2, frameIndex: u32, angleRad: f32) void {
@@ -116,10 +112,10 @@ pub const Sprite = struct {
 
         var spriteSurf = Game.Surface.init(sheetSurf.oc.pixels, srcx, srcy, srcw, srch, sheetSurf.width);
 
-        const dstx = @floatToInt(i32, pos.x - dim.x / 2);
-        const dsty = @floatToInt(i32, pos.y - dim.y / 2);
+        const dstx = Game.compat_floatToInt(i32, pos.x - dim.x / 2);
+        const dsty = Game.compat_floatToInt(i32, pos.y - dim.y / 2);
 
-        renderer.sprite_blend_rotated(&spriteSurf, dstx, dsty, @floatToInt(i32, dim.x), @floatToInt(i32, dim.y), angleRad);
+        renderer.sprite_blend_rotated(&spriteSurf, dstx, dsty, Game.compat_floatToInt(i32, dim.x), Game.compat_floatToInt(i32, dim.y), angleRad);
     }
 };
 
@@ -134,13 +130,15 @@ pub const Sprites = struct {
     pub fn init(allocator: Allocator) !Self {
         const spritesJson = Game.Assets.ASSET_MAP.get("sprites.json").?;
 
-        var stream = std.json.TokenStream.init(spritesJson);
+        //var stream = std.json.TokenStream.init(spritesJson);
 
         var spriteMap = std.StringHashMap(*Sprite).init(std.heap.page_allocator);
         var textureMap = std.StringHashMap(*Game.Surface).init(std.heap.page_allocator);
 
-        var parsedData = std.json.parse(JsonSpritesTop, &stream, .{ .allocator = allocator, .ignore_unknown_fields = true });
-        if (parsedData) |jsprites| {
+        //const parsedData = std.json.parse(JsonSpritesTop, &stream, .{ .allocator = allocator, .ignore_unknown_fields = true });
+        const parsedData = std.json.parseFromSlice(JsonSpritesTop, allocator, spritesJson, .{ .ignore_unknown_fields = true });
+        if (parsedData) |j| {
+            const jsprites = j.value;
             var animActions: std.enums.EnumMap(AnimationAction, []AnimationFrame) = .{};
             for (jsprites.items) |*jsprite| {
                 //std.log.info("Sprite name={s} filename={s} size={},{} textures={any}", .{sprite.name, sprite.filename, sprite.size[0], sprite.size[1], sprite.textures});
@@ -173,19 +171,22 @@ pub const Sprites = struct {
                         return err;
                     };
                     // im is allocated, sheetSurf is copied and just has a pointer to allocated buf
-                    var sl = std.mem.bytesAsSlice(u32, @alignCast(4, im.pixels.asBytes()));
-                    var sheetSurf: *Game.Surface = Game.Surface.create(allocator, sl.ptr, 0, 0, im.width, im.height, im.width) catch |err| {
+                    //const sl = std.mem.bytesAsSlice(u32, @as(*u32, @alignCast(im.pixels.asBytes())));
+                    //const sl = std.mem.bytesAsSlice(u32, @as([]u32, @alignCast(im.pixels.asBytes())));
+                    const p = im.pixels.asBytes().ptr;
+                    const sheetSurf: *Game.Surface = Game.Surface.create(allocator, @alignCast(@ptrCast(p)), 0, 0, im.width, im.height, im.width) catch |err| {
+                        //                    const sheetSurf: *Game.Surface = Game.Surface.create(allocator, sl.ptr, 0, 0, im.width, im.height, im.width) catch |err| {
                         return err;
                     };
                     try textureMap.put(jsprite.*.filename, sheetSurf);
                 }
 
                 // get the sheetSurface
-                var sheetSurf = textureMap.get(jsprite.*.filename).?;
+                const sheetSurf = textureMap.get(jsprite.*.filename).?;
                 // save sprite in map
 
                 // needs to be allocated!
-                var sprite: *Sprite = Sprite.create(std.heap.page_allocator, jsprite.*.size, jsprite.*.textures, jsprite.*.animations, animActions, sheetSurf, jsprite.*.name) catch |err| {
+                const sprite: *Sprite = Sprite.create(std.heap.page_allocator, jsprite.*.size, jsprite.*.textures, jsprite.*.animations, animActions, sheetSurf, jsprite.*.name) catch |err| {
                     return err;
                 };
                 try spriteMap.put(jsprite.name, sprite);

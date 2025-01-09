@@ -7,6 +7,7 @@ const pocketmod = @cImport({
 const Sound = @import("sound.zig");
 
 const Game = @import("game.zig").Game;
+const zeptolibc = @import("zeptolibc");
 
 const Vec2 = Game.Vec2;
 const vec2 = Game.vec2;
@@ -24,7 +25,7 @@ var leftright: [RENDER_QUANTUM_FRAMES * 2]f32 = undefined;
 var music_volume: f32 = 0.5;
 var fx_volume: f32 = 1.0;
 
-var prng = std.rand.DefaultPrng.init(0);
+var prng = std.Random.DefaultPrng.init(0);
 var rand = prng.random();
 
 const NUMBALLS = 1000;
@@ -53,92 +54,6 @@ const mod_data = @embedFile("assets/space_debris.mod");
 
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 const allocator = gpa.allocator();
-
-export fn zmalloc(size: c_int) callconv(.C) ?[*]u8 {
-    //_ = console.print("zmalloc {d}\n", .{size}) catch 0;
-    var mem = allocator.alloc(u8, @intCast(usize, size + @sizeOf(usize))) catch {
-        _ = console.print("ALLOCFAIL", .{}) catch 0;
-        return null;
-    };
-    const sz = @ptrCast(*usize, @alignCast(@alignOf(*usize), mem.ptr));
-    sz.* = @intCast(usize, size);
-    //_ = console.print("<- zmalloc ptr={any}\n", .{mem.ptr}) catch 0;
-    return mem.ptr + @sizeOf(usize);
-}
-
-export fn zcalloc(count: c_int, size: c_int) callconv(.C) ?[*]u8 {
-    //_ = console.print("zcalloc {d}\n", .{size}) catch 0;
-
-    var mem: ?[*]u8 = zmalloc(count * size);
-    if (mem != null) {
-        @memset(mem.?[@sizeOf(usize)..@intCast(usize, size)].ptr, 0x00, @intCast(usize, count * size));
-    }
-    return mem;
-}
-
-export fn zfree(ptr: ?[*]u8) callconv(.C) void {
-    if (ptr == null) {
-        return;
-    }
-    //_ = console.print("zfree ptr={any}\n", .{ptr}) catch 0;
-
-    const sz = @ptrCast(*const usize, @alignCast(@alignOf(*usize), ptr.?) - @sizeOf(usize));
-    const p = ptr.? - @sizeOf(usize);
-    allocator.free(p[0 .. sz.* + @sizeOf(usize)]);
-}
-
-export fn zrealloc(oldptr: ?[*]u8, size: c_int) callconv(.C) ?[*]u8 {
-    if (oldptr == null) {
-        return zmalloc(size);
-    }
-    //_ = console.print("zrealloc oldptr={any}\n", .{oldptr}) catch 0;
-    const oldsz = @ptrCast(*const usize, @alignCast(@alignOf(*usize), oldptr.?) - @sizeOf(usize));
-    const p = oldptr.? - @sizeOf(usize);
-    var oldmem = p[0 .. oldsz.* + @sizeOf(usize)];
-
-    //_ = console.print("oldsz {d}\n", .{oldsz}) catch 0;
-
-    var mem = allocator.realloc(oldmem, @intCast(usize, size + @sizeOf(usize))) catch {
-        _ = console.print("ALLOCFAIL", .{}) catch 0;
-        return null;
-    };
-    const sz = @ptrCast(*usize, @alignCast(@alignOf(*usize), mem.ptr));
-    sz.* = @intCast(usize, size);
-    return mem.ptr + @sizeOf(usize);
-}
-
-export fn zsin(x: f64) callconv(.C) f64 {
-    return @sin(x);
-}
-export fn zcos(x: f64) callconv(.C) f64 {
-    return @cos(x);
-}
-export fn zsqrt(x: f64) callconv(.C) f64 {
-    return std.math.sqrt(x);
-}
-export fn zpow(x: f64, y: f64) callconv(.C) f64 {
-    return std.math.pow(f64, x, y);
-}
-export fn zfabs(x: f64) callconv(.C) f64 {
-    return @fabs(x);
-}
-export fn zfloor(x: f64) callconv(.C) f64 {
-    return @floor(x);
-}
-export fn zceil(x: f64) callconv(.C) f64 {
-    return @ceil(x);
-}
-export fn zfmod(x: f64, y: f64) callconv(.C) f64 {
-    return @mod(x, y);
-}
-export fn zmemcpy(dst: [*]u8, src: [*]const u8, len: c_int) [*]u8 {
-    @memcpy(dst, src, @intCast(usize, len));
-    return dst;
-}
-export fn zmemset(dst: [*]u8, val: c_int, len: c_int) [*]u8 {
-    @memset(dst, @intCast(u8, val), @intCast(usize, len));
-    return dst;
-}
 
 const Ball = struct {
     const Self = @This();
@@ -177,24 +92,28 @@ const Ball = struct {
     }
 };
 
-pub const std_options = struct {
-    pub fn logFn(
-        comptime message_level: std.log.Level,
-        comptime scope: @TypeOf(.enum_literal),
-        comptime format: []const u8,
-        args: anytype,
-    ) void {
-        _ = message_level;
-        _ = scope;
-        _ = console.print(format ++ "\n", args) catch 0;
-    }
+fn consoleWriteFn(data: []const u8) void {
+    _ = console.print("{s}", .{data}) catch 0;
+}
+
+pub fn logFn(
+    comptime message_level: std.log.Level,
+    comptime scope: @TypeOf(.enum_literal),
+    comptime format: []const u8,
+    args: anytype,
+) void {
+    _ = message_level;
+    _ = scope;
+    _ = console.print(format, args) catch 0;
+}
+
+pub const std_options: std.Options = .{
+    .logFn = logFn,
 };
 
 pub fn panic(msg: []const u8, trace: ?*std.builtin.StackTrace, ret_addr: ?usize) noreturn {
-    _ = ret_addr;
-    _ = trace;
-    @setCold(true);
-    _ = console.print("PANIC: {s}", .{msg}) catch 0;
+    _ = console.print("PANIC: {s} ret_addr={any}\n", .{ msg, ret_addr }) catch 0;
+    _ = console.print("{any}\n", .{trace}) catch 0;
     while (true) {}
 }
 
@@ -207,34 +126,34 @@ export fn keyevent(keycode: u32, down: bool) void {
 }
 
 export fn getGfxBufPtr() [*]u8 {
-    return @ptrCast([*]u8, &gfxFramebuffer);
+    return Game.compat_ptrCast([*]u8, &gfxFramebuffer);
 }
 
 export fn setSampleRate(s: f32) void {
     sampleRate = s;
-    _ = pocketmod.pocketmod_init(&pmodctx, mod_data, mod_data.len, @floatToInt(c_int, sampleRate));
+    _ = pocketmod.pocketmod_init(&pmodctx, mod_data, mod_data.len, Game.compat_floatToInt(c_int, sampleRate));
 
     gSound = Game.Sound.init(sampleRate, "assets/gzdoom.sf2");
 }
 
 export fn getLeftBufPtr() [*]u8 {
-    return @ptrCast([*]u8, &mix_left);
+    return Game.compat_ptrCast([*]u8, &mix_left);
 }
 
 export fn getRightBufPtr() [*]u8 {
-    return @ptrCast([*]u8, &mix_right);
+    return Game.compat_ptrCast([*]u8, &mix_right);
 }
 
 export fn renderSoundQuantum() void {
     var bytes: usize = RENDER_QUANTUM_FRAMES * 4 * 2;
 
     // pocketmod produces interleaved l/r/l/r data, so fetch a double batch
-    var lrbuf = @ptrCast([*]u8, &leftright);
+    const lrbuf = Game.compat_ptrCast([*]u8, &leftright);
     bytes = RENDER_QUANTUM_FRAMES * 4 * 2;
     var i: usize = 0;
     while (i < bytes) {
-        const count = pocketmod.pocketmod_render(&pmodctx, lrbuf + i, @intCast(c_int, bytes - i));
-        i += @intCast(usize, count);
+        const count = pocketmod.pocketmod_render(&pmodctx, lrbuf + i, Game.compat_intCast(c_int, bytes - i));
+        i += Game.compat_intCast(usize, count);
     }
 
     // then deinterleave it into the l and r buffers
@@ -254,12 +173,15 @@ fn randColour() u32 {
 }
 
 fn resize(w: i32, h: i32) void {
-    const screenRect = Game.Rect.init(0, 0, @intToFloat(f32, w), @intToFloat(f32, h));
+    const screenRect = Game.Rect.init(0, 0, Game.compat_intToFloat(f32, w), Game.compat_intToFloat(f32, h));
     gWorld.setScreenViewport(screenRect, zoom);
     _ = console.print("zoom {d}\n", .{zoom}) catch 0;
 }
 
 export fn init() void {
+    // init zepto with a memory allocator and console writer
+    zeptolibc.init(allocator, consoleWriteFn);
+
     frameCount = 0;
 
     gSprites = Game.Sprites.init(allocator) catch |err| {
@@ -285,7 +207,7 @@ export fn init() void {
         return;
     };
 
-    var coins: [7]*Game.Sprite = .{
+    const coins: [7]*Game.Sprite = .{
         gSprites.get("goldcoin").?,
         gSprites.get("redcoin").?,
         gSprites.get("silvercoin").?,
@@ -308,14 +230,14 @@ export fn init() void {
 
 fn setupLevel(level: usize) void {
     var buf: [16]u8 = undefined;
-    var fname_png = std.fmt.bufPrint(&buf, "level{d}.png", .{level}) catch |err| {
+    const fname_png = std.fmt.bufPrint(&buf, "level{d}.png", .{level}) catch |err| {
         _ = console.print("err {any}\n", .{err}) catch 0;
         unreachable;
     };
 
     const data = Game.Assets.ASSET_MAP.get(fname_png);
 
-    var fname_txt = std.fmt.bufPrint(&buf, "level{d}.txt", .{level}) catch |err| {
+    const fname_txt = std.fmt.bufPrint(&buf, "level{d}.txt", .{level}) catch |err| {
         _ = console.print("err {any}\n", .{err}) catch 0;
         unreachable;
     };
@@ -369,7 +291,7 @@ fn setupLevel(level: usize) void {
         const rockScale: f32 = levelData.rockScale;
         const rockBitmap = levelData.rockBitmap;
 
-        var rockpoly = Game.Polygon.initFromBitmap(allocator, rockBitmapWidth, rockBitmapHeight, rockBitmap, rockScale) catch |err| {
+        const rockpoly = Game.Polygon.initFromBitmap(allocator, rockBitmapWidth, rockBitmapHeight, rockBitmap, rockScale) catch |err| {
             _ = console.print("err {any}\n", .{err}) catch 0;
             return;
         };
@@ -458,7 +380,7 @@ fn showFPS() void {
     lastTime = Game.millis();
 
     var buf: [16]u8 = undefined;
-    var sl = std.fmt.bufPrint(&buf, "{d} fps", .{lastFPS}) catch |err| {
+    const sl = std.fmt.bufPrint(&buf, "{d} fps", .{lastFPS}) catch |err| {
         _ = console.print("err {any}\n", .{err}) catch 0;
         return;
     };

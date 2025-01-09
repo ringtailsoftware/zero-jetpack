@@ -10,12 +10,9 @@ Fly Zero the Ziguana through space, collect the eggs and deposit them carefully 
 
 # Build and test (assumes you have zig installed)
 
-    zig build
-    cd zig-out && python3 -m http.server 8000
-
-# Build and test via docker
-
-    make
+```bash
+zig build && zig build serve -- zig-out -p 8000
+```
 
 Browse to http://localhost:8000
 

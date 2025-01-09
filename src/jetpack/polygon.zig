@@ -5,7 +5,7 @@ const vec2 = Game.vec2;
 const Vec2 = Game.Vec2;
 const Rect = Game.Rect;
 
-const RndGen = std.rand.DefaultPrng;
+const RndGen = std.Random.DefaultPrng;
 
 const wobbleFactor: f32 = 0.2;
 
@@ -20,33 +20,33 @@ pub const PolygonComponent = struct {
     verts: []const Vec2,
 };
 
-export fn MPE_MemorySet(buf: [*]u8, val: u8, len: u32) callconv(.C) [*]u8 {
-    @memset(buf, val, len);
-    return buf;
-}
+//export fn MPE_MemorySet(buf: [*]u8, val: u8, len: u32) callconv(.C) [*]u8 {
+//    @memset(buf, val, len);
+//    return buf;
+//}
+//
+//export fn MPE_MemoryCopy(dst: [*]u8, src: [*]u8, n: u32) callconv(.C) [*]u8 {
+//    @memcpy(dst, src, n);
+//    return dst;
+//}
+//
+//export fn mpe_assert(func: [*:0]const u8, line: u32, a: u32) callconv(.C) void {
+//    if (a == 0) {
+//        std.log.info("MPE ASSERT FAILED {s}:{d}\n", .{ func, line });
+//        //        std.os.exit(1); // FIXME
+//    }
+//}
 
-export fn MPE_MemoryCopy(dst: [*]u8, src: [*]u8, n: u32) callconv(.C) [*]u8 {
-    @memcpy(dst, src, n);
-    return dst;
-}
-
-export fn mpe_assert(func: [*:0]const u8, line: u32, a: u32) callconv(.C) void {
-    if (a == 0) {
-        std.log.info("MPE ASSERT FAILED {s}:{d}\n", .{ func, line });
-        //        std.os.exit(1); // FIXME
-    }
-}
-
-export fn mpe_debug(msg: [*:0]const u8, n: u32) callconv(.C) void {
-    std.log.info("MPE DEBUG '{s}' {}\n", .{ msg, n });
-}
+//export fn mpe_debug(msg: [*:0]const u8, n: u32) callconv(.C) void {
+//    std.log.info("MPE DEBUG '{s}' {}\n", .{ msg, n });
+//}
 
 pub const Polygon = struct {
     const Self = @This();
     polyComponents: std.ArrayList(PolygonComponent),
     triVerts: std.ArrayList(Vec2),
     triIndices: std.ArrayList([3]usize),
-    aabb: Game.Rect,
+    aabb: Rect,
 
     pub fn init(allocator: Allocator, polyComponents: []const PolygonComponent, scale: f32, translation: Vec2) !Self {
         var s = Self{
@@ -68,7 +68,7 @@ pub const Polygon = struct {
             for (pc.verts) |v| {
                 try vertcopy.append(v.scale(scale).add(translation));
             }
-            var newpc = PolygonComponent{
+            const newpc = PolygonComponent{
                 .negative = pc.negative,
                 .verts = vertcopy.items,
             };
@@ -82,8 +82,8 @@ pub const Polygon = struct {
         return s;
     }
 
-    fn calcAABB(verts: *std.ArrayList(Vec2)) Game.Rect {
-        var aabb: Game.Rect = Game.Rect{
+    fn calcAABB(verts: *std.ArrayList(Vec2)) Rect {
+        var aabb: Rect = Rect{
             .tl = verts.items[0],
             .br = verts.items[0],
         };
@@ -105,22 +105,22 @@ pub const Polygon = struct {
         return aabb;
     }
 
-    fn wobbleVec2(r: std.rand.Random, x: f32, y: f32, w: f32, off: Vec2) Vec2 {
+    fn wobbleVec2(r: std.Random, x: f32, y: f32, w: f32, off: Vec2) Vec2 {
         const xw = r.float(f32) * w;
         const yw = r.float(f32) * w;
         return vec2(x + xw, y + yw).add(off);
     }
 
-    fn createWobbleGrid(allocator: Allocator, r: std.rand.Random, w: usize, h: usize, scale: f32, off: Vec2) !std.ArrayList(Vec2) {
+    fn createWobbleGrid(allocator: Allocator, r: std.Random, w: usize, h: usize, scale: f32, off: Vec2) !std.ArrayList(Vec2) {
         var wobbleGrid = std.ArrayList(Vec2).initCapacity(allocator, (w + 1) * (h + 1)) catch |err| {
             return err;
         };
         var y: usize = 0;
         while (y < (h + 1)) : (y += 1) {
-            const fy = @intToFloat(f32, y);
+            const fy = Game.compat_intToFloat(f32, y);
             var x: usize = 0;
             while (x < (w + 1)) : (x += 1) {
-                const fx = @intToFloat(f32, x);
+                const fx = Game.compat_intToFloat(f32, x);
                 try wobbleGrid.append(wobbleVec2(r, fx * scale, fy * scale, wobbleFactor * scale, off));
             }
         }
@@ -139,8 +139,8 @@ pub const Polygon = struct {
             .aabb = undefined,
         };
 
-        var prng = std.rand.DefaultPrng.init(0);
-        var rand = prng.random();
+        var prng = std.Random.DefaultPrng.init(0);
+        const rand = prng.random();
 
         errdefer s.deinit();
         // FIXME, free it all after
@@ -152,8 +152,8 @@ pub const Polygon = struct {
         var verts = std.ArrayList(Vec2).initCapacity(allocator, 4) catch |err| {
             return err;
         };
-        const widthf = @intToFloat(f32, width);
-        const heightf = @intToFloat(f32, height);
+        const widthf = Game.compat_intToFloat(f32, width);
+        const heightf = Game.compat_intToFloat(f32, height);
         const off = vec2(-(widthf / 2) * scale, -(heightf / 2) * scale);
 
         var wobbleGrid = createWobbleGrid(allocator, rand, width, height, scale, off) catch |err| {
@@ -165,7 +165,7 @@ pub const Polygon = struct {
         try verts.append(vec2(widthf * scale, 0).add(off));
         try verts.append(vec2(widthf * scale, heightf * scale).add(off));
         try verts.append(vec2(0, heightf * scale).add(off));
-        var newpc = PolygonComponent{
+        const newpc = PolygonComponent{
             .negative = false,
             .verts = verts.items,
         };
@@ -207,13 +207,13 @@ pub const Polygon = struct {
         // calc total numPoints
         var numPoints: u32 = 0;
         for (polyComponents) |pc| {
-            numPoints += @intCast(u32, pc.verts.len);
+            numPoints += Game.compat_intCast(u32, pc.verts.len);
         }
 
         // setup memory buffer
         const memRequired = mpe.MPE_PolyMemoryRequired(numPoints);
         const memory = try allocator.alignedAlloc(u8, 8, memRequired);
-        @memset(memory.ptr, 0x00, memRequired);
+        @memset(memory, 0x00);
         defer allocator.free(memory);
 
         // process
@@ -267,12 +267,12 @@ pub const Polygon = struct {
         self.polyComponents.deinit();
     }
 
-    fn posToUV(aabb: Game.Rect, p: Vec2, w: f32, h: f32) Vec2 {
+    fn posToUV(aabb: Rect, p: Vec2, w: f32, h: f32) Vec2 {
         var tx: f32 = undefined;
         var ty: f32 = undefined;
 
-        var px = p.x - aabb.tl.x;
-        var py = p.y - aabb.tl.y;
+        const px = p.x - aabb.tl.x;
+        const py = p.y - aabb.tl.y;
 
         // tx,ty are now fraction across entire image 0 to 1
         tx = px / aabb.width();
@@ -299,20 +299,20 @@ pub const Polygon = struct {
             const v1view = world.worldToView(v1world);
             const v2view = world.worldToView(v2world);
 
-            const w = @intToFloat(f32, sprite.sheetSurf.width);
-            const h = @intToFloat(f32, sprite.sheetSurf.height);
+            const w = Game.compat_intToFloat(f32, sprite.sheetSurf.width);
+            const h = Game.compat_intToFloat(f32, sprite.sheetSurf.height);
 
             const uv0 = posToUV(self.aabb, v0model, w, h);
             const uv1 = posToUV(self.aabb, v1model, w, h);
             const uv2 = posToUV(self.aabb, v2model, w, h);
 
             // draw triangle
-            renderer.drawTriangleTex(@floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), @floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), @floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), uv0.x, uv0.y, uv1.x, uv1.y, uv2.x, uv2.y, sprite.sheetSurf);
+            renderer.drawTriangleTex(Game.compat_floatToInt(i32, v0view.x), Game.compat_floatToInt(i32, v0view.y), Game.compat_floatToInt(i32, v1view.x), Game.compat_floatToInt(i32, v1view.y), Game.compat_floatToInt(i32, v2view.x), Game.compat_floatToInt(i32, v2view.y), uv0.x, uv0.y, uv1.x, uv1.y, uv2.x, uv2.y, sprite.sheetSurf);
 
             //            // draw outline
-            //            renderer.drawLine(@floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), @floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), 0xFF000000);
-            //            renderer.drawLine(@floatToInt(i32, v1view.x), @floatToInt(i32, v1view.y), @floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), 0xFF000000);
-            //            renderer.drawLine(@floatToInt(i32, v2view.x), @floatToInt(i32, v2view.y), @floatToInt(i32, v0view.x), @floatToInt(i32, v0view.y), 0xFF000000);
+            //            renderer.drawLine(Game.compat_floatToInt(i32, v0view.x), Game.compat_floatToInt(i32, v0view.y), Game.compat_floatToInt(i32, v1view.x), Game.compat_floatToInt(i32, v1view.y), 0xFF000000);
+            //            renderer.drawLine(Game.compat_floatToInt(i32, v1view.x), Game.compat_floatToInt(i32, v1view.y), Game.compat_floatToInt(i32, v2view.x), Game.compat_floatToInt(i32, v2view.y), 0xFF000000);
+            //            renderer.drawLine(Game.compat_floatToInt(i32, v2view.x), Game.compat_floatToInt(i32, v2view.y), Game.compat_floatToInt(i32, v0view.x), Game.compat_floatToInt(i32, v0view.y), 0xFF000000);
 
         }
     }
@@ -327,13 +327,13 @@ pub const Polygon = struct {
             const v2 = world.worldToView(self.triVerts.items[triIndex[2]].scale(scale).add(pos));
 
             // draw triangle
-            renderer.drawTriangle(@floatToInt(i32, v0.x), @floatToInt(i32, v0.y), @floatToInt(i32, v1.x), @floatToInt(i32, v1.y), @floatToInt(i32, v2.x), @floatToInt(i32, v2.y), 0xFFFF0000);
+            renderer.drawTriangle(Game.compat_floatToInt(i32, v0.x), Game.compat_floatToInt(i32, v0.y), Game.compat_floatToInt(i32, v1.x), Game.compat_floatToInt(i32, v1.y), Game.compat_floatToInt(i32, v2.x), Game.compat_floatToInt(i32, v2.y), 0xFFFF0000);
 
             if (lines) {
                 // draw outline
-                renderer.drawLine(@floatToInt(i32, v0.x), @floatToInt(i32, v0.y), @floatToInt(i32, v1.x), @floatToInt(i32, v1.y), 0xFFFFFFFF);
-                renderer.drawLine(@floatToInt(i32, v1.x), @floatToInt(i32, v1.y), @floatToInt(i32, v2.x), @floatToInt(i32, v2.y), 0xFFFFFFFF);
-                renderer.drawLine(@floatToInt(i32, v2.x), @floatToInt(i32, v2.y), @floatToInt(i32, v0.x), @floatToInt(i32, v0.y), 0xFFFFFFFF);
+                renderer.drawLine(Game.compat_floatToInt(i32, v0.x), Game.compat_floatToInt(i32, v0.y), Game.compat_floatToInt(i32, v1.x), Game.compat_floatToInt(i32, v1.y), 0xFFFFFFFF);
+                renderer.drawLine(Game.compat_floatToInt(i32, v1.x), Game.compat_floatToInt(i32, v1.y), Game.compat_floatToInt(i32, v2.x), Game.compat_floatToInt(i32, v2.y), 0xFFFFFFFF);
+                renderer.drawLine(Game.compat_floatToInt(i32, v2.x), Game.compat_floatToInt(i32, v2.y), Game.compat_floatToInt(i32, v0.x), Game.compat_floatToInt(i32, v0.y), 0xFFFFFFFF);
             }
         }
 
@@ -343,7 +343,7 @@ pub const Polygon = struct {
             var i: usize = 1;
             while (i < self.polyComponents.items[0].verts.len + 1) : (i += 1) {
                 const next = world.worldToView(self.polyComponents.items[0].verts[i % self.polyComponents.items[0].verts.len].scale(scale).add(pos));
-                renderer.drawLine(@floatToInt(i32, prev.x), @floatToInt(i32, prev.y), @floatToInt(i32, next.x), @floatToInt(i32, next.y), 0xFF00FFFF);
+                renderer.drawLine(Game.compat_floatToInt(i32, prev.x), Game.compat_floatToInt(i32, prev.y), Game.compat_floatToInt(i32, next.x), Game.compat_floatToInt(i32, next.y), 0xFF00FFFF);
                 prev = next;
             }
         }

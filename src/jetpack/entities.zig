@@ -52,14 +52,14 @@ pub const Entities = struct {
     }
 
     pub fn addFloater(self: *Self, pos: Vec2, spriteName: []const u8) !EntityId {
-        var f = Game.Floater.init(self.sprites.get(spriteName).?, pos);
+        const f = Game.Floater.init(self.sprites.get(spriteName).?, pos);
         const id = self.getNextId();
         try self.entities.put(id, Entity{ .floater = f });
         return id;
     }
 
     pub fn addEgg(self: *Self, sprite: *Game.Sprite, pos: Vec2, autorespawn: bool, sizeMultiplier: f32) !EntityId {
-        var e = Game.Egg.init(sprite, pos, autorespawn, sizeMultiplier);
+        const e = Game.Egg.init(sprite, pos, autorespawn, sizeMultiplier);
         const id = self.getNextId();
         try self.entities.put(id, Entity{ .egg = e });
         return id;

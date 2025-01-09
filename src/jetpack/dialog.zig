@@ -78,7 +78,7 @@ pub const Dialog = struct {
     pub fn renderPanel(self: *const Self, renderer: *Game.Renderer, tl: Vec2) void {
         const panelRect = Game.Rect.initPts(
             tl,
-            tl.add(vec2(@intToFloat(f32, renderer.surface.width), 128)),
+            tl.add(vec2(Game.compat_intToFloat(f32, renderer.surface.width), 128)),
         );
         renderer.fillRect(panelRect, 0xE0202020);
 
@@ -87,7 +87,7 @@ pub const Dialog = struct {
             else => 0,
         };
         self.portraitSprite.render(renderer, vec2(64, 64).add(tl), vec2(128, 128), frame);
-        renderer.drawStringLines(self.font, &self.text, 128 + @floatToInt(i32, tl.x), 40 + @floatToInt(i32, tl.y), 0xFFFFFFFF);
+        renderer.drawStringLines(self.font, &self.text, 128 + Game.compat_floatToInt(i32, tl.x), 40 + Game.compat_floatToInt(i32, tl.y), 0xFFFFFFFF);
     }
 
     pub fn render(self: *const Self, renderer: *Game.Renderer) void {
@@ -95,14 +95,14 @@ pub const Dialog = struct {
 
         switch (self.state) {
             .Opening => {
-                const t = std.math.min(@intToFloat(f32, Game.millis() - self.stateStartTime) / OpeningTime, 1);
+                const t = @min(Game.compat_intToFloat(f32, Game.millis() - self.stateStartTime) / OpeningTime, 1);
                 y = Game.lerp(-128, 0, t, Game.LerpStyle.EaseInExpo);
             },
             .Idle => {
                 y = 0;
             },
             .Closing, .Finished => {
-                const t = std.math.min(@intToFloat(f32, Game.millis() - self.stateStartTime) / ClosingTime, 1);
+                const t = @min(Game.compat_intToFloat(f32, Game.millis() - self.stateStartTime) / ClosingTime, 1);
                 y = Game.lerp(0, -128, t, Game.LerpStyle.EaseOutExpo);
             },
         }

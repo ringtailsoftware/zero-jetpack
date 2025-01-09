@@ -46,7 +46,7 @@ pub const Player = struct {
         }
 
         // scale factor deltaMs to give constant speed regardless of fps
-        const deltaScale = @intToFloat(f32, deltaMs) / 1000.0;
+        const deltaScale = Game.compat_intToFloat(f32, deltaMs) / 1000.0;
 
         // update point
         const delta = (self.bobPos.sub(self.lastBobPos)).scale(0.95); // however far it moved last frame, with drag
@@ -68,7 +68,7 @@ pub const Player = struct {
         const move = p2.sub(p1).scale(fraction);
         self.bobPos = self.bobPos.add(move);
 
-        self.angle = std.math.atan2(f32, self.body.pos.y - self.bobPos.y, self.body.pos.x - self.bobPos.x) + std.math.pi / 2.0;
+        self.angle = std.math.atan2(self.body.pos.y - self.bobPos.y, self.body.pos.x - self.bobPos.x) + std.math.pi / 2.0;
     }
 
     pub fn update(self: *Self, world: *Game.World, deltaMs: i64, rock: *const Game.Rock, basket: *const Game.Basket, towMass: f32, sound: *Game.Sound) void {
@@ -127,7 +127,7 @@ pub const Player = struct {
     pub fn render(self: *Self, renderer: *Game.Renderer, world: *Game.World) void {
         const posv = world.worldToView(self.body.pos);
         const s = world.worldToViewScale();
-        var r = self.body.radius * std.math.min(s.x, s.y); // worldWindow might be different aspect, fudge it
+        const r = self.body.radius * @min(s.x, s.y); // worldWindow might be different aspect, fudge it
 
         self.body.render(renderer, world);
 
@@ -139,7 +139,7 @@ pub const Player = struct {
         // bob
         if (false) {
             const bobv = world.worldToView(self.bobPos);
-            renderer.drawLine(@floatToInt(i16, posv.x), @floatToInt(i16, posv.y), @floatToInt(i16, bobv.x), @floatToInt(i16, bobv.y), 0xFF00FF00);
+            renderer.drawLine(Game.compat_floatToInt(i16, posv.x), Game.compat_floatToInt(i16, posv.y), Game.compat_floatToInt(i16, bobv.x), Game.compat_floatToInt(i16, bobv.y), 0xFF00FF00);
         }
     }
 

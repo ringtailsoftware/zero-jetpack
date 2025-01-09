@@ -46,11 +46,11 @@ pub const Sound = struct {
         _ = sf2name;
         const synth_font = @embedFile("assets/gzdoom.sf2");
         var fbs = std.io.fixedBufferStream(synth_font);
-        var reader = fbs.reader();
+        const reader = fbs.reader();
         var sound_font = SoundFont.init(allocator, reader) catch unreachable;
-        var settings = SynthesizerSettings.init(@floatToInt(i32, sampleRate));
+        var settings = SynthesizerSettings.init(@intFromFloat(sampleRate));
         settings.block_size = RENDER_QUANTUM_FRAMES;
-        var synthesizer = Synthesizer.init(allocator, sound_font, settings) catch unreachable;
+        const synthesizer = Synthesizer.init(allocator, &sound_font, &settings) catch unreachable;
 
         return Self{
             .synthesizer = synthesizer,

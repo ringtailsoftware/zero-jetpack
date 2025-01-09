@@ -5,8 +5,8 @@ const vec2 = Game.vec2;
 const Vec2 = Game.Vec2;
 const Rect = Game.Rect;
 
-const RndGen = std.rand.DefaultPrng;
-var prng = std.rand.DefaultPrng.init(0);
+const RndGen = std.Random.DefaultPrng;
+var prng = std.Random.DefaultPrng.init(0);
 var rand = prng.random();
 
 const EGG_SIZE = 32;
@@ -68,7 +68,7 @@ pub const Egg = struct {
         }
 
         // scale factor deltaMs to give constant speed regardless of fps
-        const deltaScale = @intToFloat(f32, deltaMs) / 1000.0;
+        const deltaScale = Game.compat_intToFloat(f32, deltaMs) / 1000.0;
 
         // update point
         const delta = (self.body.pos.sub(self.lastBobPos)).scale(0.99); // however far it moved last frame, with drag
@@ -100,7 +100,7 @@ pub const Egg = struct {
         self.body.pos = self.body.pos.add(move);
 
         const prevAngle = self.angle;
-        self.angle = std.math.atan2(f32, player.body.pos.y - self.body.pos.y, player.body.pos.x - self.body.pos.x) + std.math.pi / 2.0;
+        self.angle = std.math.atan2(player.body.pos.y - self.body.pos.y, player.body.pos.x - self.body.pos.x) + std.math.pi / 2.0;
         self.angleVel = (self.angle - prevAngle) / deltaScale;
     }
 
@@ -108,7 +108,7 @@ pub const Egg = struct {
         var runphys = true;
 
         // scale factor deltaMs to give constant speed regardless of fps
-        const deltaScale = @intToFloat(f32, deltaMs) / 1000.0;
+        const deltaScale = Game.compat_intToFloat(f32, deltaMs) / 1000.0;
 
         const toPlayer = player.body.pos.sub(self.body.pos);
         const distToPlayer = toPlayer.length();
@@ -201,11 +201,11 @@ pub const Egg = struct {
     pub fn render(self: *Self, renderer: *Game.Renderer, world: *Game.World, player: *const Game.Player) void {
         const posv = world.worldToView(self.body.pos);
         const s = world.worldToViewScale();
-        var r = self.body.radius * std.math.min(s.x, s.y); // worldWindow might be different aspect, fudge it
+        const r = self.body.radius * @min(s.x, s.y); // worldWindow might be different aspect, fudge it
 
         if (self.state == .UnderTow or self.state == .UnderTowAttach) {
             const playerv = world.worldToView(player.body.pos);
-            renderer.drawLine(@floatToInt(i32, posv.x), @floatToInt(i32, posv.y), @floatToInt(i32, playerv.x), @floatToInt(i32, playerv.y), 0xFFFFFF00);
+            renderer.drawLine(Game.compat_floatToInt(i32, posv.x), Game.compat_floatToInt(i32, posv.y), Game.compat_floatToInt(i32, playerv.x), Game.compat_floatToInt(i32, playerv.y), 0xFFFFFF00);
         }
 
         self.body.render(renderer, world);

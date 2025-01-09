@@ -11,8 +11,8 @@ const Allocator = std.mem.Allocator;
 
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
-const FONT_NUMCHARS = 128;
-const FONT_FIRSTCHAR = ' ';
+const FONT_NUMCHARS: u8 = 128;
+const FONT_FIRSTCHAR: u8 = ' ';
 
 pub const Surface = struct {
     const Self = @This();
@@ -89,21 +89,18 @@ pub const Font = struct {
 
     pub fn init(ttfname: []const u8, pixelSize: f32) !Self {
         const al = gpa.allocator();
-        var bakedFontWidth: usize = @floatToInt(usize, FONT_NUMCHARS * pixelSize);
-        var bakedFontHeight: usize = @floatToInt(usize, FONT_NUMCHARS * pixelSize);
+        const bakedFontWidth: usize = Game.compat_floatToInt(usize, FONT_NUMCHARS * pixelSize);
+        const bakedFontHeight: usize = Game.compat_floatToInt(usize, FONT_NUMCHARS * pixelSize);
 
-        var bakedFont = al.alloc(u8, bakedFontWidth * bakedFontHeight) catch |err| {
-            return err;
-        };
-        var bakedChars = al.alloc(ttf.stbtt_bakedchar, FONT_NUMCHARS) catch |err| {
-            return err;
-        };
+        var bakedFont = try al.alloc(u8, bakedFontWidth * bakedFontHeight);
+        var bakedChars = try al.alloc(ttf.stbtt_bakedchar, FONT_NUMCHARS);
 
         const fontData = Game.Assets.ASSET_MAP.get(ttfname);
         if (fontData == null) {
             return error.NoSuchTTF;
         }
-        var ret = ttf.stbtt_BakeFontBitmap(@ptrCast([*]u8, @constCast(fontData.?)), 0, pixelSize, bakedFont.ptr, @intCast(c_int, bakedFontWidth), @intCast(c_int, bakedFontHeight), FONT_FIRSTCHAR, FONT_NUMCHARS, bakedChars.ptr);
+
+        const ret = ttf.stbtt_BakeFontBitmap(Game.compat_ptrCast([*]u8, @constCast(fontData.?)), 0, pixelSize, @ptrCast(&bakedFont[0]), Game.compat_intCast(c_int, bakedFontWidth), Game.compat_intCast(c_int, bakedFontHeight), FONT_FIRSTCHAR, FONT_NUMCHARS, @ptrCast(&bakedChars[0]));
         if (ret <= 0) {
             std.log.err("BakeFontBitmap ret={d}", .{ret});
             return error.FontInitFailed;
@@ -177,17 +174,17 @@ pub const Renderer = struct {
         const sin = @sin(angleRad);
 
         // FIXME, this could be optimised as corners are equidistant from midpoint
-        const xr1 = aboutx + @floatToInt(i32, @intToFloat(f32, (x1 - aboutx)) * cos - @intToFloat(f32, (y1 - abouty)) * sin);
-        const yr1 = abouty + @floatToInt(i32, @intToFloat(f32, (x1 - aboutx)) * sin + @intToFloat(f32, (y1 - abouty)) * cos);
+        const xr1 = aboutx + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x1 - aboutx)) * cos - Game.compat_intToFloat(f32, (y1 - abouty)) * sin);
+        const yr1 = abouty + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x1 - aboutx)) * sin + Game.compat_intToFloat(f32, (y1 - abouty)) * cos);
 
-        const xr2 = aboutx + @floatToInt(i32, @intToFloat(f32, (x2 - aboutx)) * cos - @intToFloat(f32, (y2 - abouty)) * sin);
-        const yr2 = abouty + @floatToInt(i32, @intToFloat(f32, (x2 - aboutx)) * sin + @intToFloat(f32, (y2 - abouty)) * cos);
+        const xr2 = aboutx + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x2 - aboutx)) * cos - Game.compat_intToFloat(f32, (y2 - abouty)) * sin);
+        const yr2 = abouty + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x2 - aboutx)) * sin + Game.compat_intToFloat(f32, (y2 - abouty)) * cos);
 
-        const xr3 = aboutx + @floatToInt(i32, @intToFloat(f32, (x3 - aboutx)) * cos - @intToFloat(f32, (y3 - abouty)) * sin);
-        const yr3 = abouty + @floatToInt(i32, @intToFloat(f32, (x3 - aboutx)) * sin + @intToFloat(f32, (y3 - abouty)) * cos);
+        const xr3 = aboutx + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x3 - aboutx)) * cos - Game.compat_intToFloat(f32, (y3 - abouty)) * sin);
+        const yr3 = abouty + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x3 - aboutx)) * sin + Game.compat_intToFloat(f32, (y3 - abouty)) * cos);
 
-        const xr4 = aboutx + @floatToInt(i32, @intToFloat(f32, (x4 - aboutx)) * cos - @intToFloat(f32, (y4 - abouty)) * sin);
-        const yr4 = abouty + @floatToInt(i32, @intToFloat(f32, (x4 - aboutx)) * sin + @intToFloat(f32, (y4 - abouty)) * cos);
+        const xr4 = aboutx + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x4 - aboutx)) * cos - Game.compat_intToFloat(f32, (y4 - abouty)) * sin);
+        const yr4 = abouty + Game.compat_floatToInt(i32, Game.compat_intToFloat(f32, (x4 - aboutx)) * sin + Game.compat_intToFloat(f32, (y4 - abouty)) * cos);
 
         olive.olivec_triangle3uv_blend(self.surface.oc, xr1, yr1, xr2, yr2, xr3, yr3, tx1, ty1, tx2, ty2, tx3, ty3, 1, 1, 1, spriteSurface.oc);
         olive.olivec_triangle3uv_blend(self.surface.oc, xr3, yr3, xr4, yr4, xr1, yr1, tx3, ty3, tx4, ty4, tx1, ty1, 1, 1, 1, spriteSurface.oc);
@@ -200,12 +197,12 @@ pub const Renderer = struct {
 
     pub fn fillRect(self: *Self, r: Game.Rect, colour: u32) void {
         self.stats.drawRect += 1;
-        olive.olivec_rect(self.surface.oc, @floatToInt(i32, r.tl.x), @floatToInt(i32, r.tl.y), @floatToInt(i32, r.width()), @floatToInt(i32, r.height()), colour);
+        olive.olivec_rect(self.surface.oc, Game.compat_floatToInt(i32, r.tl.x), Game.compat_floatToInt(i32, r.tl.y), Game.compat_floatToInt(i32, r.width()), Game.compat_floatToInt(i32, r.height()), colour);
     }
 
     pub fn drawRect(self: *Self, r: Game.Rect, colour: u32) void {
         self.stats.drawRect += 1;
-        olive.olivec_frame(self.surface.oc, @floatToInt(i32, r.tl.x), @floatToInt(i32, r.tl.y), @floatToInt(i32, r.width()), @floatToInt(i32, r.height()), 1, colour);
+        olive.olivec_frame(self.surface.oc, Game.compat_floatToInt(i32, r.tl.x), Game.compat_floatToInt(i32, r.tl.y), Game.compat_floatToInt(i32, r.width()), Game.compat_floatToInt(i32, r.height()), 1, colour);
     }
 
     pub fn drawTriangle(self: *Self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, colour: u32) void {
@@ -246,13 +243,13 @@ pub const Renderer = struct {
         var y = posy;
         for (strs) |str| {
             self.drawString(font, str, posx, y, colour);
-            y += @floatToInt(i32, font.pixelSize);
+            y += Game.compat_floatToInt(i32, font.pixelSize);
         }
     }
 
     pub fn drawString(self: *Self, font: *Font, str: []const u8, posx: i32, posy: i32, colour: u32) void {
-        var startx: f32 = @intToFloat(f32, posx);
-        var starty: f32 = @intToFloat(f32, posy);
+        var startx: f32 = Game.compat_intToFloat(f32, posx);
+        var starty: f32 = Game.compat_intToFloat(f32, posy);
 
         for (str) |b| {
             if (b - FONT_FIRSTCHAR > FONT_NUMCHARS) {
@@ -260,15 +257,15 @@ pub const Renderer = struct {
             }
 
             var q: ttf.stbtt_aligned_quad = undefined;
-            ttf.stbtt_GetBakedQuad(font.bakedChars.ptr, @intCast(c_int, font.bakedFontWidth), @intCast(c_int, font.bakedFontHeight), b - FONT_FIRSTCHAR, &startx, &starty, &q, 1);
+            ttf.stbtt_GetBakedQuad(font.bakedChars.ptr, Game.compat_intCast(c_int, font.bakedFontWidth), Game.compat_intCast(c_int, font.bakedFontHeight), b - FONT_FIRSTCHAR, &startx, &starty, &q, 1);
 
-            var dstx: i32 = @floatToInt(i32, q.x0);
-            var dsty: i32 = @floatToInt(i32, q.y0);
+            const dstx: i32 = Game.compat_floatToInt(i32, q.x0);
+            const dsty: i32 = Game.compat_floatToInt(i32, q.y0);
 
-            var srcx: i32 = @floatToInt(i32, q.s0 * @intToFloat(f32, font.bakedFontWidth));
-            var srcy: i32 = @floatToInt(i32, q.t0 * @intToFloat(f32, font.bakedFontHeight));
-            var srcw: i32 = @floatToInt(i32, (q.s1 - q.s0) * @intToFloat(f32, font.bakedFontWidth));
-            var srch: i32 = @floatToInt(i32, (q.t1 - q.t0) * @intToFloat(f32, font.bakedFontHeight));
+            const srcx: i32 = Game.compat_floatToInt(i32, q.s0 * Game.compat_intToFloat(f32, font.bakedFontWidth));
+            const srcy: i32 = Game.compat_floatToInt(i32, q.t0 * Game.compat_intToFloat(f32, font.bakedFontHeight));
+            var srcw: i32 = Game.compat_floatToInt(i32, (q.s1 - q.s0) * Game.compat_intToFloat(f32, font.bakedFontWidth));
+            var srch: i32 = Game.compat_floatToInt(i32, (q.t1 - q.t0) * Game.compat_intToFloat(f32, font.bakedFontHeight));
 
             // srcw,srch == dstw,dsth (but stride is different, src is 8bpp, dst is 32bpp)
 
@@ -285,11 +282,11 @@ pub const Renderer = struct {
             }
             // clip right
             if (dstx + srcw > self.surface.oc.width) {
-                srcw = @intCast(i32, self.surface.oc.width) - dstx;
+                srcw = Game.compat_intCast(i32, self.surface.oc.width) - dstx;
             }
             // clip bottom
             if (dsty + srcw > self.surface.oc.width) {
-                srch = @intCast(i32, self.surface.oc.height) - dsty;
+                srch = Game.compat_intCast(i32, self.surface.oc.height) - dsty;
             }
 
             var y: i32 = yoff;
@@ -297,23 +294,23 @@ pub const Renderer = struct {
                 var x: i32 = xoff;
                 while (x < srcw) : (x += 1) {
                     const srcPixVal: u8 = font.bakedFont[
-                        @intCast(usize, (srcx + x) +
-                            (srcy + y) * @intCast(i32, font.bakedFontWidth))
+                        Game.compat_intCast(usize, (srcx + x) +
+                            (srcy + y) * Game.compat_intCast(i32, font.bakedFontWidth))
                     ];
 
-                    const r16 = @intCast(u16, (colour & 0x000000FF) >> 0);
-                    const g16 = @intCast(u16, (colour & 0x0000FF00) >> 8);
-                    const b16 = @intCast(u16, (colour & 0x00FF0000) >> 16);
-                    const a16 = @intCast(u16, (colour & 0xFF000000) >> 24);
+                    const r16 = Game.compat_intCast(u16, (colour & 0x000000FF) >> 0);
+                    const g16 = Game.compat_intCast(u16, (colour & 0x0000FF00) >> 8);
+                    const b16 = Game.compat_intCast(u16, (colour & 0x00FF0000) >> 16);
+                    const a16 = Game.compat_intCast(u16, (colour & 0xFF000000) >> 24);
 
-                    var dstPixVal: u32 =
+                    const dstPixVal: u32 =
                         (@as(u32, (srcPixVal * a16) >> 8) << 24) |
                         (@as(u32, (srcPixVal * b16) >> 8) << 16) |
                         (@as(u32, (srcPixVal * g16) >> 8) << 8) |
                         (@as(u32, (srcPixVal * r16) >> 8) << 0);
 
-                    var origColourPtr = self.surface.oc.pixels +
-                        @intCast(usize, (dstx + x) + ((dsty + y) * @intCast(i32, self.surface.oc.stride)));
+                    const origColourPtr = self.surface.oc.pixels +
+                        Game.compat_intCast(usize, (dstx + x) + ((dsty + y) * Game.compat_intCast(i32, self.surface.oc.stride)));
                     olive.olivec_blend_color(origColourPtr, dstPixVal);
                 }
             }

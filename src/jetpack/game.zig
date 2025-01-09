@@ -1,4 +1,4 @@
-const math = @import("zlm");
+const math = @import("zlm/zlm.zig");
 
 pub const Game = struct {
     pub usingnamespace @import("sound.zig");
@@ -26,4 +26,20 @@ pub const Game = struct {
     pub const Vec2 = math.Vec2;
     pub const millis = @import("time.zig").millis;
     pub const initTime = @import("time.zig").initTime;
+
+    pub fn compat_ptrCast(comptime T: type, value: anytype) T {
+        return @as(T, @ptrCast(value));
+    }
+
+    pub fn compat_intCast(comptime T: type, value: anytype) T {
+        return @as(T, @intCast(value));
+    }
+
+    pub fn compat_intToFloat(comptime T: type, value: anytype) T {
+        return @as(T, @floatFromInt(value));
+    }
+
+    pub fn compat_floatToInt(comptime T: type, value: anytype) T {
+        return @as(T, @intFromFloat(value));
+    }
 };

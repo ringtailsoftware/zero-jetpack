@@ -32,14 +32,14 @@ pub fn init() void {}
 
 fn scancodeToKey(scancode: u32) ?Key {
     return switch (scancode) {
-        @enumToInt(Scancode.left) => Key.Left,
-        @enumToInt(Scancode.right) => Key.Right,
-        @enumToInt(Scancode.up) => Key.Up,
-        @enumToInt(Scancode.down) => Key.Down,
-        @enumToInt(Scancode.space) => Key.Act,
-        @enumToInt(Scancode.equals), @enumToInt(Scancode.equals2) => Key.ZoomIn,
-        @enumToInt(Scancode.minus), @enumToInt(Scancode.minus2) => Key.ZoomOut,
-        @enumToInt(Scancode.escape), @enumToInt(Scancode.q) => Key.Quit,
+        @intFromEnum(Scancode.left) => Key.Left,
+        @intFromEnum(Scancode.right) => Key.Right,
+        @intFromEnum(Scancode.up) => Key.Up,
+        @intFromEnum(Scancode.down) => Key.Down,
+        @intFromEnum(Scancode.space) => Key.Act,
+        @intFromEnum(Scancode.equals), @intFromEnum(Scancode.equals2) => Key.ZoomIn,
+        @intFromEnum(Scancode.minus), @intFromEnum(Scancode.minus2) => Key.ZoomOut,
+        @intFromEnum(Scancode.escape), @intFromEnum(Scancode.q) => Key.Quit,
         else => null,
     };
 }

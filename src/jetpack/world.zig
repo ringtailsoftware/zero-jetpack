@@ -105,7 +105,7 @@ pub const World = struct {
                     red +%= 1;
                     if (x >= self.worldWindow.tl.x - r and x <= self.worldWindow.br.x + r and y >= self.worldWindow.tl.y - r and y <= self.worldWindow.br.y + r) {
                         const cpos = self.worldToView(vec2(x, y));
-                        renderer.circle(@floatToInt(i32, cpos.x), @floatToInt(i32, cpos.y), @floatToInt(i32, r), 0xFFFF00FF);
+                        renderer.circle(Game.compat_floatToInt(i32, cpos.x), Game.compat_floatToInt(i32, cpos.y), Game.compat_floatToInt(i32, r), 0xFFFF00FF);
                     }
                 }
             }

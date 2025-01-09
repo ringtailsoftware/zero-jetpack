@@ -24,7 +24,7 @@ pub const Body = struct {
 
     pub fn init(pos: Vec2, radius: f32, mass: f32) Self {
         // zig fmt: off
-        var s = Self{
+        const s = Self{
             .pos = pos,
             .vel = vec2(0, 0),
             .thrust = vec2(0, 0),
@@ -56,7 +56,7 @@ pub const Body = struct {
         }
 
         // scale factor deltaMs to give constant speed regardless of fps
-        const deltaScale = @intToFloat(f32, deltaMs) / 1000.0;
+        const deltaScale = Game.compat_intToFloat(f32, deltaMs) / 1000.0;
 
         const speed = self.vel.length();
 
@@ -92,7 +92,7 @@ pub const Body = struct {
         // vel is in units/s, scale by update delta for constant rate regardless of fps
         const newpos = self.pos.add(self.vel.scale(deltaScale));
 
-        var aabb = Rect{ .tl = vec2(newpos.x - self.radius, newpos.y - self.radius), .br = vec2(newpos.x + self.radius, newpos.y + self.radius) };
+        const aabb = Rect{ .tl = vec2(newpos.x - self.radius, newpos.y - self.radius), .br = vec2(newpos.x + self.radius, newpos.y + self.radius) };
 
         // is new aabb entirely inside world bounds?
         if (world.worldBounds.containsRect(aabb)) {
@@ -121,12 +121,12 @@ pub const Body = struct {
         if (false) {
             const posv = world.worldToView(self.pos);
             const s = world.worldToViewScale();
-            var r = self.radius * std.math.min(s.x, s.y); // worldWindow might be different aspect, fudge it
-            renderer.circle(@floatToInt(i32, posv.x), @floatToInt(i32, posv.y), @floatToInt(i32, r), 0xFF00FF00);
+            const r = self.radius * @min(s.x, s.y); // worldWindow might be different aspect, fudge it
+            renderer.circle(Game.compat_floatToInt(i32, posv.x), Game.compat_floatToInt(i32, posv.y), Game.compat_floatToInt(i32, r), 0xFF00FF00);
             //const thr = self.thrust.scale(s.length()/10).add(posv);
-            //renderer.drawLine(@floatToInt(i32, posv.x), @floatToInt(i32, posv.y), @floatToInt(i32, thr.x), @floatToInt(i32, thr.y), 0xFF0000FF);
+            //renderer.drawLine(Game.compat_floatToInt(i32, posv.x), Game.compat_floatToInt(i32, posv.y), Game.compat_floatToInt(i32, thr.x), Game.compat_floatToInt(i32, thr.y), 0xFF0000FF);
             const vel = self.vel.scale(s.length()).add(posv);
-            renderer.drawLine(@floatToInt(i32, posv.x), @floatToInt(i32, posv.y), @floatToInt(i32, vel.x), @floatToInt(i32, vel.y), 0xFFFFFFFF);
+            renderer.drawLine(Game.compat_floatToInt(i32, posv.x), Game.compat_floatToInt(i32, posv.y), Game.compat_floatToInt(i32, vel.x), Game.compat_floatToInt(i32, vel.y), 0xFFFFFFFF);
         }
     }
 };

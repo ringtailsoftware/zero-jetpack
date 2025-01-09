@@ -30,7 +30,7 @@ pub const Collision = struct {
             const contact = lineFrom.add(lineDir.scale(d));
 
             // calc normal by projecting from contact point towards location
-            const a = std.math.atan2(f32, contact.y - location.y, contact.x - location.x);
+            const a = std.math.atan2(contact.y - location.y, contact.x - location.x);
             //        const n = vec2(std.math.cos(a),std.math.sin(a)).normalize().scale(-1);
             const n = vec2(std.math.cos(a), std.math.sin(a)).scale(-1);
             return .{ contact, n };
@@ -50,7 +50,7 @@ pub const Collision = struct {
     pub fn checkCollisionPointCircle(point: Vec2, centre: Vec2, radius: f32) ?[2]Vec2 {
         if (checkCollisionCircles(point, 0, centre, radius)) {
             // project intersection point onto edge of circle
-            const a = std.math.atan2(f32, point.y - centre.y, point.x - centre.x);
+            const a = std.math.atan2(point.y - centre.y, point.x - centre.x);
             const n = vec2(std.math.cos(a), std.math.sin(a)).scale(-1); //.normalize().scale(-1);
             return .{ vec2(centre.x + std.math.cos(a) * radius, centre.y + std.math.sin(a) * radius), n };
         } else {
@@ -61,13 +61,13 @@ pub const Collision = struct {
     pub fn checkCollisionPointTriangle(point: Vec2, p1: Vec2, p2: Vec2, p3: Vec2) bool {
         var collision = false;
 
-        var alpha = ((p2.y - p3.y) * (point.x - p3.x) + (p3.x - p2.x) * (point.y - p3.y)) /
+        const alpha = ((p2.y - p3.y) * (point.x - p3.x) + (p3.x - p2.x) * (point.y - p3.y)) /
             ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
 
-        var beta = ((p3.y - p1.y) * (point.x - p3.x) + (p1.x - p3.x) * (point.y - p3.y)) /
+        const beta = ((p3.y - p1.y) * (point.x - p3.x) + (p1.x - p3.x) * (point.y - p3.y)) /
             ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
 
-        var gamma = 1.0 - alpha - beta;
+        const gamma = 1.0 - alpha - beta;
 
         if ((alpha > 0) and (beta > 0) and (gamma > 0)) collision = true;
 

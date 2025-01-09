@@ -138,14 +138,30 @@
 
 #define MPE_POLY2TRI_USE_CUSTOM_SORT 1
 #include <stdint.h> // uint32_t
-typedef int32_t ssize_t;
-typedef uint32_t size_t;
-#define NULL 0
+//typedef int32_t ssize_t;
+//typedef uint32_t size_t;
+//#define NULL 0
 
-void *MPE_MemorySet(void *b, int c, size_t len);
-void *MPE_MemoryCopy(void *restrict dst, const void *restrict src, size_t n);
-void mpe_assert(const char *func, uint32_t line, uint32_t a);
-void mpe_debug(const char *msg, uint32_t n);
+#include <zeptolibc/zeptolibc.h>
+
+//void *MPE_MemorySet(void *b, int c, size_t len);
+//void *MPE_MemoryCopy(void *restrict dst, const void *restrict src, size_t n);
+//void mpe_assert(const char *func, uint32_t line, uint32_t a);
+//void mpe_debug(const char *msg, uint32_t n);
+
+static void *MPE_MemorySet(void *b, int c, size_t len) {
+    return memset(b, c, len);
+}
+
+static void *MPE_MemoryCopy(void *restrict dst, const void *restrict src, size_t n) {
+    return memcpy(dst, src, n);
+}
+
+static void mpe_assert(const char *func, uint32_t line, uint32_t a) {
+    if (!a) {
+        printf("MPE_ASSERT f=%s line=%d\n", func, line);
+    }
+}
 
 #define MPE_Assert(X) mpe_assert(__FUNCTION__, __LINE__, X!=0)
 //#define MPE_Assert

@@ -5,8 +5,8 @@ const vec2 = Game.vec2;
 const Vec2 = Game.Vec2;
 const Rect = Game.Rect;
 
-const RndGen = std.rand.DefaultPrng;
-var prng = std.rand.DefaultPrng.init(0);
+const RndGen = std.Random.DefaultPrng;
+var prng = std.Random.DefaultPrng.init(0);
 var rand = prng.random();
 
 pub const AnimationController = struct {
